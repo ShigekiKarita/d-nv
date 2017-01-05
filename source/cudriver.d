@@ -1,6 +1,41 @@
 import core.stdc.config;
 
 extern (C++):
+
+CUresult cuMemAlloc_(CUdeviceptr* dptr, size_t bytesize);
+CUresult cuMemFree_(CUdeviceptr dptr);
+CUresult cudaDeviceInit(int dev);
+
+
+struct _nvrtcProgram;
+alias nvrtcProgram = _nvrtcProgram*;
+enum nvrtcResult {
+  NVRTC_SUCCESS = 0,
+  NVRTC_ERROR_OUT_OF_MEMORY = 1,
+  NVRTC_ERROR_PROGRAM_CREATION_FAILURE = 2,
+  NVRTC_ERROR_INVALID_INPUT = 3,
+  NVRTC_ERROR_INVALID_PROGRAM = 4,
+  NVRTC_ERROR_INVALID_OPTION = 5,
+  NVRTC_ERROR_COMPILATION = 6,
+  NVRTC_ERROR_BUILTIN_OPERATION_FAILURE = 7,
+  NVRTC_ERROR_NO_NAME_EXPRESSIONS_AFTER_COMPILATION = 8,
+  NVRTC_ERROR_NO_LOWERED_NAMES_BEFORE_COMPILATION = 9,
+  NVRTC_ERROR_NAME_EXPRESSION_NOT_VALID = 10,
+  NVRTC_ERROR_INTERNAL_ERROR = 11
+}
+// const(char*) nvrtcGetErrorString(nvrtcResult result);
+
+nvrtcResult nvrtcCreateProgram_(
+  nvrtcProgram* prog, const char* code, const char* name,
+  int numHeaders=0, char** headers=null, char** includeNames=null);
+// nvrtcResult nvrtcCreateProgram_(nvrtcProgram* prog, const char* code, const char* name);
+/* planning usage:
+
+   nv.Program p = nvrtc.create(name, code, headers, opts);
+
+
+ */
+
 alias CUdeviceptr = ulong;
 enum CUresult {
   CUDA_SUCCESS                              = 0,
@@ -151,7 +186,7 @@ enum CUresult {
 
   /**
    * This indicates that the ::CUcontext passed to the API call can
-   * only be bound to a single CPU thread at a time but is already 
+   * only be bound to a single CPU thread at a time but is already
    * bound to a CPU thread.
    */
   CUDA_ERROR_CONTEXT_ALREADY_IN_USE         = 216,
@@ -259,7 +294,7 @@ enum CUresult {
    * mode.
    */
   CUDA_ERROR_LAUNCH_INCOMPATIBLE_TEXTURING  = 703,
-    
+
   /**
    * This error indicates that a call to ::cuCtxEnablePeerAccess() is
    * trying to re-enable peer access to a context which has already
@@ -268,9 +303,9 @@ enum CUresult {
   CUDA_ERROR_PEER_ACCESS_ALREADY_ENABLED    = 704,
 
   /**
-   * This error indicates that ::cuCtxDisablePeerAccess() is 
-   * trying to disable peer access which has not been enabled yet 
-   * via ::cuCtxEnablePeerAccess(). 
+   * This error indicates that ::cuCtxDisablePeerAccess() is
+   * trying to disable peer access which has not been enabled yet
+   * via ::cuCtxEnablePeerAccess().
    */
   CUDA_ERROR_PEER_ACCESS_NOT_ENABLED        = 705,
 
@@ -289,15 +324,15 @@ enum CUresult {
 
   /**
    * A device-side assert triggered during kernel execution. The context
-   * cannot be used anymore, and must be destroyed. All existing device 
-   * memory allocations from this context are invalid and must be 
+   * cannot be used anymore, and must be destroyed. All existing device
+   * memory allocations from this context are invalid and must be
    * reconstructed if the program is to continue using CUDA.
    */
   CUDA_ERROR_ASSERT                         = 710,
 
   /**
    * This error indicates that the hardware resources required to enable
-   * peer access have been exhausted for one or more of the devices 
+   * peer access have been exhausted for one or more of the devices
    * passed to ::cuCtxEnablePeerAccess().
    */
   CUDA_ERROR_TOO_MANY_PEERS                 = 711,
@@ -391,7 +426,7 @@ string cudaGetErrorEnum(CUresult error) {
   switch (error)
   {
     case CUresult.CUDA_SUCCESS:
-      return "CUresult.CUDA_SUCCESS" ~ 
+      return "CUresult.CUDA_SUCCESS" ~
 r"
     /**
      * The API call returned with no errors. In the case of query calls, this
@@ -587,11 +622,3 @@ r"
     return "<unknown>";
   }
 }
-
-CUresult cuMemAlloc_(CUdeviceptr* dptr, size_t bytesize);
-
-struct CUctx_st;
-alias CUcontext = CUctx_st*;
-struct DeviceInfo;
-CUresult cudaDeviceInit(int dev);
-class device_vector(T);
