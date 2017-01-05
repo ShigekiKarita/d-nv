@@ -1,0 +1,13 @@
+*
+*/
+
+!source
+!cpp-nvrtc
+
+!*.d
+!*.cpp
+!*.cu
+!*.md
+
+!.gitignore
+!Makefile
