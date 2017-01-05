@@ -23,7 +23,7 @@ enum nvrtcResult {
   NVRTC_ERROR_NAME_EXPRESSION_NOT_VALID = 10,
   NVRTC_ERROR_INTERNAL_ERROR = 11
 }
-// const(char*) nvrtcGetErrorString(nvrtcResult result);
+const(char*) nvrtcGetErrorString_(nvrtcResult result);
 
 nvrtcResult nvrtcCreateProgram_(
   nvrtcProgram* prog, const char* code, const char* name,
@@ -422,6 +422,8 @@ enum CUresult {
   CUDA_ERROR_UNKNOWN                        = 999
 };
 
+
+// const(char*) cudaGetErrorEnum_(CUresult error);
 string cudaGetErrorEnum(CUresult error) {
   switch (error)
   {

@@ -1,6 +1,7 @@
 import std.stdio;
 import std.conv;
 import std.format;
+import std.string;
 import cudriver;
 
 class CudaError : Exception {
@@ -8,8 +9,8 @@ class CudaError : Exception {
 
   this(CUresult r, string file = __FILE__, size_t line = __LINE__) {
     result = r;
-    auto msg = cudaGetErrorEnum(r);
-    msg ~= ">> raised from %s(L%d)".format(file, line);
+    auto err = cudaGetErrorEnum(r);
+    auto msg = "%s>> raised from %s(L%d)".format(err, file, line);
     super(msg, file, line);
   }
 }
@@ -59,16 +60,24 @@ class Array(T) {
   }
 }
 
+
 class Kernel {
-  string code;
-  this(string s) {
-    code = s;
+  string name;
+  string ptx;
+  string log;
+  this(string name, string code) {
+    name = name;
+    nvrtcProgram p;
+    nvrtcResult res = nvrtcCreateProgram_(&p, code.toStringz, name.toStringz);
+    nvrtcGetErrorString_(res).fromStringz.writeln;
+    // TODO: compile to ptx & get compiler's log
   }
-}
 
-auto rtc(string code) {
-  return new Kernel(code);
-}
-
-void call(T...)(T ts) {
+  void call(T...)(int[3] threads, int[3] blocks, T ts) {
+    /*
+    CUfunction kernel;
+    cuGetContext
+    cuLaunchKernel(kernel, blocks, 1, 1, threads, 1, 1, 0, null, args, 0)
+    */
+  }
 }
