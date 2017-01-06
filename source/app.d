@@ -24,17 +24,15 @@ void main() {
     writeln(e.msg ~ "\n there seems to be no device1");
   }
 
-  auto kernel = new nv.Kernel("add.cu",`
-extern "C" __global__ void
-vectorAdd(const float *A, const float *B, float *C, int numElements) {
-    int i = blockDim.x * blockIdx.x + threadIdx.x;
-    if (i < numElements) C[i] = A[i] + B[i];
-}`);
-
+  auto kernel = new nv.Kernel(
+    "vectorAdd", `(const float *A, const float *B, float *C, int numElements) {
+      int i = blockDim.x * blockIdx.x + threadIdx.x;
+      if (i < numElements) C[i] = A[i] + B[i];
+    }`);
 
   int[3] threads = [256, 1, 1];
   int[3] blocks = [(n + threads[0] - 1) / threads[0], 1, 1];
-  kernel.call(threads, blocks, a, b, c, n);
+  // kernel.call(a, b, c, n);
 
   writeln(">>> finished <<<");
 }

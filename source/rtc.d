@@ -36,28 +36,22 @@ class Array(T) {
     check(cuMemAlloc_(&ptr, size));
   }
   ~this() {
-    // TODO: should I ensure nothrow?
     check(cuMemFree_(ptr));
   }
 }
 
 
 class Kernel {
+  static immutable funcHead = `extern "C" __global__ void `;
   string name;
-  string ptx;
-  string log;
-  this(string name, string code) {
+  CUfunction func;
+  this(string funcName, string funcBody) {
     name = name;
-    nvrtcProgram p;
-    check(nvrtcCreateProgram_(&p, code.toStringz, name.toStringz));
-    // TODO: compile to ptx & get compiler's log
+    auto code = funcHead ~ funcName ~ funcBody;
+    func = compile_(funcName.toStringz, code.toStringz);
   }
 
-  void call(T...)(int[3] threads, int[3] blocks, T ts) {
-    /*
-    CUfunction kernel;
-    cuGetContext
-    cuLaunchKernel(kernel, blocks, 1, 1, threads, 1, 1, 0, null, args, 0)
-    */
+  void call(A)(A a, A b, A c, int n) {
+    call_(func, a.ptr, b.ptr, c.ptr, n);
   }
 }

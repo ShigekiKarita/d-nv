@@ -92,3 +92,8 @@ nvrtcResult nvrtcCreateProgram_(
   nvrtcProgram* prog, const char* code, const char* name,
   int numHeaders=0, char** headers=null, char** includeNames=null);
 
+
+private struct CUfunction_st;
+alias CUfunction = CUfunction_st*;
+CUfunction compile_(const(char*) funcname, const(char*) code);
+void call_(CUfunction kernel_addr, CUdeviceptr d_A, CUdeviceptr d_B, CUdeviceptr d_C, int numElements);
