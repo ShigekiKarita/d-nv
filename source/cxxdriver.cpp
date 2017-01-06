@@ -42,18 +42,25 @@ CUresult cudaDeviceInit(int id) {
   return CUDA_SUCCESS;
 }
 
-
 nvrtcResult nvrtcCreateProgram_(
   nvrtcProgram* prog, const char* code, const char* name,
   int numHeaders, char** headers, char** includeNames) {
   return nvrtcCreateProgram(prog, code, name, numHeaders, headers, includeNames);
 }
-
-const char* nvrtcGetErrorString_(nvrtcResult result) {
+const char* getErrorName(nvrtcResult result) {
   return nvrtcGetErrorString(result);
 }
 
-const char* cudaGetErrorEnum_(CUresult result) {
+
+/*
+const char* getErrorName(CUresult result) {
+  const char* str;
+  cuGetErrorString(result, &str);
+  return str;
+}
+*/
+
+/*
   switch (result)
   {
   case CUDA_SUCCESS:
@@ -233,3 +240,5 @@ const char* cudaGetErrorEnum_(CUresult result) {
 
   return "<unknown>";
 }
+*/
+

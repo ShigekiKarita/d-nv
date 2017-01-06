@@ -20,7 +20,7 @@ void main() {
   try {
     auto c1 = new nv.Array!float(n, 1);
     nvidia_smi().writeln;
-  } catch (nv.CudaError e) {
+  } catch (nv.CudaError!CUresult e) {
     writeln(e.msg ~ "\n there seems to be no device1");
   }
 
