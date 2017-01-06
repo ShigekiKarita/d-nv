@@ -2,15 +2,28 @@
 
 just work in progress
 
-roadmap
+## roadmap
 
+(- v1.0)
 1. (DONE) allocate memory on multiple devices with CUDA Driver API
-1. compile a kernel of raw string with NVRTC
-1. launch a kernel function
-1. mult-device support
-1. pure D code
+1. (WIP) compile a kernel of raw string with NVRTC
+1. (WIP) launch a kernel function
+1. support template kernels
 
-issues
+(v1.0 -)
+1. thrust support
+1. fully multi-device support
+1. more D code ratio
+
+## issues
 
 + fix the CUdeviceptr definition to use cuMemAlloc directly
 + think about how to cleanup resources
++ add unit tests
+
+## referrence
+
++ /usr/local/cuda/samples/0_Simple/ vectorAdd_nvrtc, simpleTemplates_nvrtc 
++ /usr/local/cuda/doc/pdf/NVRTC_User_Guide.pdf
++ /usr/local/cuda/doc/pdf/
+

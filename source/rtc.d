@@ -2,6 +2,8 @@ import std.stdio;
 import std.conv;
 import std.format;
 import std.string;
+import std.traits;
+
 import cudriver;
 
 
@@ -10,8 +12,11 @@ class CudaError(Result) : Exception {
 
   this(Result r, string file = __FILE__, int line = __LINE__) {
     result = r;
-    auto err = getErrorName(r).fromStringz;
-    super("%s".format(err), file, line);
+    super(toString, file, line);
+  }
+
+  override string toString() {
+    return Result.stringof ~ "." ~ result.to!string;
   }
 }
 
