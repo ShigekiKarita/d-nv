@@ -32,7 +32,7 @@ class Array(T) {
   CUdeviceptr ptr;
   this(size_t n, int dev = 1) {
     size = T.sizeof * n;
-    check(cudaDeviceInit(dev));
+    check(cudaDeviceInit_(dev));
     check(cuMemAlloc_(&ptr, size));
   }
   ~this() {

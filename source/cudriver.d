@@ -6,7 +6,7 @@ import core.stdc.config;
 alias CUdeviceptr = c_ulong;
 CUresult cuMemAlloc_(CUdeviceptr* dptr, size_t bytesize);
 CUresult cuMemFree_(CUdeviceptr dptr);
-CUresult cudaDeviceInit(int dev);
+CUresult cudaDeviceInit_(int dev);
 
 
 enum CUresult {
@@ -71,7 +71,7 @@ enum CUresult {
   CUDA_ERROR_UNKNOWN                        = 999
 }
 
-struct _nvrtcProgram;
+private struct _nvrtcProgram;
 alias nvrtcProgram = _nvrtcProgram*;
 enum nvrtcResult {
   NVRTC_SUCCESS = 0,
