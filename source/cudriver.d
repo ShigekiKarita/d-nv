@@ -71,8 +71,7 @@ enum CUresult {
   CUDA_ERROR_UNKNOWN                        = 999
 }
 
-private struct _nvrtcProgram;
-alias nvrtcProgram = _nvrtcProgram*;
+
 enum nvrtcResult {
   NVRTC_SUCCESS = 0,
   NVRTC_ERROR_OUT_OF_MEMORY = 1,
@@ -87,11 +86,6 @@ enum nvrtcResult {
   NVRTC_ERROR_NAME_EXPRESSION_NOT_VALID = 10,
   NVRTC_ERROR_INTERNAL_ERROR = 11
 }
-
-nvrtcResult nvrtcCreateProgram_(
-  nvrtcProgram* prog, const char* code, const char* name,
-  int numHeaders=0, char** headers=null, char** includeNames=null);
-
 
 private struct CUfunction_st;
 alias CUfunction = CUfunction_st*;

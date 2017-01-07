@@ -77,12 +77,6 @@ CUresult cudaDeviceInit_(int id) {
   return CUDA_SUCCESS;
 }
 
-nvrtcResult nvrtcCreateProgram_(
-  nvrtcProgram* prog, const char* code, const char* name,
-  int numHeaders, char** headers, char** includeNames) {
-  return nvrtcCreateProgram(prog, code, name, numHeaders, headers, includeNames);
-}
-
 
 #include <cuda_runtime.h>
 #include <nvrtc_helper.h>
