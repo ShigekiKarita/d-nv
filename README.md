@@ -6,9 +6,9 @@ just work in progress
 
 (- v1.0)
 1. (DONE) allocate memory on multiple devices with CUDA Driver API
+1. (DONE) GPU device <-> CPU host memory transfer
 1. (DONE) compile a kernel of raw string with NVRTC
-1. (DONE) launch a kernel function
-1. device <-> host memory transfer
+1. (WIP) launch a kernel function
 1. support template kernels
 
 (v1.0 -)
