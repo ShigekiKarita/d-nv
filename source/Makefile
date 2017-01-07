@@ -1,6 +1,6 @@
 CUDA_DIR = $(shell dirname $(shell which nvcc))/..
 CUDA_COMPILE_FLAGS = -g3 -O0 -I $(CUDA_DIR)/samples/common/inc -std=c++11 # --gpu-architecture=compute_60 --gpu-code=sm_60,compute_60
-CUDA_LINK_FLAGS = -lcuda -lnvrtc -lcudart
+CUDA_LINK_FLAGS = -lcuda -lnvrtc -lcudart -L $(CUDA_DIR)/lib64
 
 DMD_COMPILE_FLAGS = -debug -g -gc -m64
 DMD_LIBDIR = $(shell dirname $(shell which dmd))/../lib64

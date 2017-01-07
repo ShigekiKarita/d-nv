@@ -82,6 +82,7 @@ CUresult cudaDeviceInit_(int id) {
 #include <nvrtc_helper.h>
 
 
+// FIXME: use CHECK_RESULT and return nvrtcResult instead of CUfunction
 CUfunction compile_(const char* funcname, const char* code) {
   // compile
   std::string filename(funcname);
@@ -111,6 +112,7 @@ CUfunction compile_(const char* funcname, const char* code) {
 }
 
 
+// FIXME: use CHECK_RESULT instead of CUfunction and return CUresult
 void call_(CUfunction kernel_addr, DCUdeviceptr* d_A, DCUdeviceptr* d_B, DCUdeviceptr* d_C, int numElements) {
   int threadsPerBlock = 256;
   int blocksPerGrid =(numElements + threadsPerBlock - 1) / threadsPerBlock;
