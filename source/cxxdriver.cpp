@@ -130,4 +130,12 @@ void call_(CUfunction kernel_addr, DCUdeviceptr* d_A, DCUdeviceptr* d_B, DCUdevi
   checkCudaErrors(cuCtxSynchronize());
 }
 
+CUresult cuMemcpyDtoH_(void* dstHost, DCUdeviceptr srcDevice, size_t byteCount) {
+  return cuMemcpyDtoH(dstHost, static_cast<CUdeviceptr>(srcDevice), byteCount);
+}
+CUresult cuMemcpyHtoD_(DCUdeviceptr dstDevice, const void* srcHost, size_t byteCount) {
+  return cuMemcpyHtoD(static_cast<CUdeviceptr>(dstDevice), const_cast<void*>(srcHost), byteCount);
+}
+
+
 #undef CHECK_RESULT

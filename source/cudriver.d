@@ -91,3 +91,7 @@ private struct CUfunction_st;
 alias CUfunction = CUfunction_st*;
 CUfunction compile_(const(char*) funcname, const(char*) code);
 void call_(CUfunction kernel_addr, CUdeviceptr d_A, CUdeviceptr d_B, CUdeviceptr d_C, int numElements);
+
+
+CUresult cuMemcpyDtoH_(void* dstHost, CUdeviceptr srcDevice, size_t byteCount);
+CUresult cuMemcpyHtoD_(CUdeviceptr dstDevice, const(void*) srcHost, size_t byteCount);

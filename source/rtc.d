@@ -28,18 +28,39 @@ void check(Result, string file = __FILE__, int line = __LINE__)(Result result) {
 
 
 class Array(T) {
+  int dev;
   size_t size;
   CUdeviceptr ptr;
-  this(size_t n, int dev = 1) {
+  T[] cpu_storage;
+  this(size_t n, int dev = 0) {
+    dev = dev;
     size = T.sizeof * n;
     check(cudaDeviceInit_(dev));
     check(cuMemAlloc_(&ptr, size));
   }
+  this(in T[] src, int dev = 0) {
+    this(src.length);
+    to_gpu(src);
+  }
   ~this() {
     check(cuMemFree_(ptr));
   }
+  void to_gpu(in T[] src) {
+    cuMemcpyHtoD_(ptr, to!(const(void*))(src.ptr), size);
+  }
+  T[] to_cpu() {
+    cpu_storage.length = size / T.sizeof;
+    // check(cudaDeviceInit_(dev));
+    check(cuMemcpyDtoH_(to!(void*)(cpu_storage.ptr), ptr, size));
+    return cpu_storage;
+  }
 }
 
+unittest {
+  float[] h = [1,2,3];
+  auto d = new Array!float(h);
+  assert(h == d.to_cpu());
+}
 
 class Kernel {
   static immutable funcHead = `extern "C" __global__ void `;
