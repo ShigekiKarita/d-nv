@@ -113,7 +113,7 @@ CUfunction compile_(const char* funcname, const char* code) {
 
 
 // FIXME: use CHECK_RESULT instead of CUfunction and return CUresult
-void call_(CUfunction kernel_addr, DCUdeviceptr* d_A, DCUdeviceptr* d_B, DCUdeviceptr* d_C, int numElements) {
+void call_(void* kernel_addr, DCUdeviceptr d_A, DCUdeviceptr d_B, DCUdeviceptr d_C, int numElements) {
   int threadsPerBlock = 256;
   int blocksPerGrid =(numElements + threadsPerBlock - 1) / threadsPerBlock;
   printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
@@ -121,7 +121,7 @@ void call_(CUfunction kernel_addr, DCUdeviceptr* d_A, DCUdeviceptr* d_B, DCUdevi
   dim3 cudaGridSize(blocksPerGrid, 1, 1);
 
   void *arr[] = { (void *)d_A, (void *)d_B, (void *)d_C, (void *)&numElements };
-  checkCudaErrors(cuLaunchKernel(kernel_addr,
+  checkCudaErrors(cuLaunchKernel((CUfunction) kernel_addr,
                                  cudaGridSize.x, cudaGridSize.y, cudaGridSize.z, /* grid dim */
                                  cudaBlockSize.x, cudaBlockSize.y, cudaBlockSize.z, /* block dim */
                                  0,0, /* shared mem, stream */

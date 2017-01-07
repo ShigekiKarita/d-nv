@@ -72,7 +72,7 @@ class Kernel {
     func = compile_(funcName.toStringz, code.toStringz);
   }
 
-  void call(A)(A a, A b, A c, int n) {
-    call_(func, a.ptr, b.ptr, c.ptr, n);
+  void apply(A)(A a, A b, A c, int n) {
+    call_(to!(void*)(func), a.ptr, b.ptr, c.ptr, n);
   }
 }
