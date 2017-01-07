@@ -5,6 +5,7 @@ just work in progress
 ## roadmap
 
 (- v1.0)
+
 1. (DONE) allocate memory on multiple devices with CUDA Driver API
 1. (DONE) GPU device <-> CPU host memory transfer
 1. (DONE) compile a kernel of raw string with NVRTC
@@ -12,6 +13,7 @@ just work in progress
 1. support template kernels
 
 (v1.0 -)
+
 1. thrust support
 1. fully multi-device support
 1. more D code ratio
