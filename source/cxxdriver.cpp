@@ -119,7 +119,7 @@ CUresult call_(void* kernel_addr, DCUdeviceptr d_A, DCUdeviceptr d_B, DCUdevicep
   dim3 cudaBlockSize(threadsPerBlock,1,1);
   dim3 cudaGridSize(blocksPerGrid, 1, 1);
 
-  void *arr[] = { (void *)d_A, (void *)d_B, (void *)d_C, (void *)&numElements };
+  void *arr[] = { (void *)&d_A, (void *)&d_B, (void *)&d_C, (void *)&numElements };
   auto func = (CUfunction*) kernel_addr;
   CHECK_RESULT(cuLaunchKernel(*func,
                               cudaGridSize.x, cudaGridSize.y, cudaGridSize.z, /* grid dim */

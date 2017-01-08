@@ -63,15 +63,15 @@ unittest {
 }
 
 class Kernel {
-  static immutable funcHead = `extern "C" __global__ void `;
-  string name;
-  CUfunction func;
+  immutable funcHead = `extern "C" __global__ void `;
+  const string name;
+  CUfunction func; // FIXME make func const
 
   void* vptr() {
     return to!(void*)(&func);
   }
 
-  this(string funcName, string funcBody) {
+  this(in string funcName, in string funcBody) {
     name = name;
     auto code = funcHead ~ funcName ~ funcBody;
     check(compile_(vptr(), funcName.toStringz, code.toStringz));
@@ -87,6 +87,7 @@ class Kernel {
 }
 
 unittest {
-  auto k = new Kernel("foo", "() {}");
+  immutable code = "(){int i = blockDim.x * blockIdx.x + threadIdx.x;}";
+  auto k = new Kernel("foo", code);
   k();
 }

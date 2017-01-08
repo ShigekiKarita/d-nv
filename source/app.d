@@ -12,7 +12,7 @@ string nvidia_smi() {
 }
 
 void main() {
-  int n = 1000;
+  int n = 100;
   auto a = new nv.Array!float(n, 0);
   auto b = new nv.Array!float(n, 0);
   auto c = new nv.Array!float(n, 0);
@@ -25,9 +25,9 @@ void main() {
   }
 
   auto kernel = new nv.Kernel(
-    "vectorAdd", `(const float *A, const float *B, float *C, int numElements) {
+    "vectorAdd", `(float *A, float *B, float *C, int numElements) {
       int i = blockDim.x * blockIdx.x + threadIdx.x;
-      if (i < numElements) C[i] = A[i] + B[i];
+      // if (i < numElements) C[i] = A[i] + B[i];
     }`);
 
   int[3] threads = [256, 1, 1];
