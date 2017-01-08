@@ -4,8 +4,11 @@ import core.stdc.config;
 
 
 alias CUdeviceptr = c_ulong;
+
 CUresult cuMemAlloc_(CUdeviceptr* dptr, size_t bytesize);
+
 CUresult cuMemFree_(CUdeviceptr dptr);
+
 CUresult cudaDeviceInit_(int dev);
 
 
@@ -87,11 +90,16 @@ enum nvrtcResult {
   NVRTC_ERROR_INTERNAL_ERROR = 11
 }
 
+
 struct CUfunction_st;
 alias CUfunction = CUfunction_st*;
-CUfunction compile_(const(char*) funcname, const(char*) code);
-void call_(void* kernel_addr, CUdeviceptr d_A, CUdeviceptr d_B, CUdeviceptr d_C, int numElements);
 
+nvrtcResult compile_(void* kernel_addr, const(char*) funcname, const(char*) code);
+
+CUresult call_(void* kernel_addr, CUdeviceptr d_A, CUdeviceptr d_B, CUdeviceptr d_C, int numElements);
+
+CUresult call_(void* kernel_addr);
 
 CUresult cuMemcpyDtoH_(void* dstHost, CUdeviceptr srcDevice, size_t byteCount);
+
 CUresult cuMemcpyHtoD_(CUdeviceptr dstDevice, const(void*) srcHost, size_t byteCount);

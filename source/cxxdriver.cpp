@@ -83,7 +83,7 @@ CUresult cudaDeviceInit_(int id) {
 
 
 // FIXME: use CHECK_RESULT and return nvrtcResult instead of CUfunction
-CUfunction compile_(const char* funcname, const char* code) {
+nvrtcResult compile_(void* kernel_addr, const char* funcname, const char* code) {
   // compile
   std::string filename(funcname);
   filename += ".cu";
@@ -106,14 +106,13 @@ CUfunction compile_(const char* funcname, const char* code) {
   NVRTC_SAFE_CALL("nvrtcDestroyProgram", nvrtcDestroyProgram(&prog));
 
   CUmodule module = loadPTX(ptx.get(), 0, NULL); /// ???
-  CUfunction kernel_addr;
-  checkCudaErrors(cuModuleGetFunction(&kernel_addr, module, funcname));
-  return kernel_addr;
+  checkCudaErrors(cuModuleGetFunction((CUfunction*) kernel_addr, module, funcname));
+  return NVRTC_SUCCESS;
 }
 
 
 // FIXME: use CHECK_RESULT instead of CUfunction and return CUresult
-void call_(void* kernel_addr, DCUdeviceptr d_A, DCUdeviceptr d_B, DCUdeviceptr d_C, int numElements) {
+CUresult call_(void* kernel_addr, DCUdeviceptr d_A, DCUdeviceptr d_B, DCUdeviceptr d_C, int numElements) {
   int threadsPerBlock = 256;
   int blocksPerGrid =(numElements + threadsPerBlock - 1) / threadsPerBlock;
   printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
@@ -121,13 +120,34 @@ void call_(void* kernel_addr, DCUdeviceptr d_A, DCUdeviceptr d_B, DCUdeviceptr d
   dim3 cudaGridSize(blocksPerGrid, 1, 1);
 
   void *arr[] = { (void *)d_A, (void *)d_B, (void *)d_C, (void *)&numElements };
-  checkCudaErrors(cuLaunchKernel((CUfunction) kernel_addr,
-                                 cudaGridSize.x, cudaGridSize.y, cudaGridSize.z, /* grid dim */
-                                 cudaBlockSize.x, cudaBlockSize.y, cudaBlockSize.z, /* block dim */
-                                 0,0, /* shared mem, stream */
-                                 &arr[0], /* arguments */
-                                 0));
-  checkCudaErrors(cuCtxSynchronize());
+  auto func = (CUfunction*) kernel_addr;
+  CHECK_RESULT(cuLaunchKernel(*func,
+                              cudaGridSize.x, cudaGridSize.y, cudaGridSize.z, /* grid dim */
+                              cudaBlockSize.x, cudaBlockSize.y, cudaBlockSize.z, /* block dim */
+                              0,0, /* shared mem, stream */
+                              &arr[0], /* arguments */
+                              0));
+  CHECK_RESULT(cuCtxSynchronize());
+  return CUDA_SUCCESS;
+}
+
+CUresult call_(void* kernel_addr) {
+  int threadsPerBlock = 256;
+  int blocksPerGrid =(100 + threadsPerBlock - 1) / threadsPerBlock;
+  printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
+  dim3 cudaBlockSize(threadsPerBlock,1,1);
+  dim3 cudaGridSize(blocksPerGrid, 1, 1);
+
+  void *arr[] = {};
+  auto func = (CUfunction*) kernel_addr;
+  CHECK_RESULT(cuLaunchKernel(*func,
+                              cudaGridSize.x, cudaGridSize.y, cudaGridSize.z, /* grid dim */
+                              cudaBlockSize.x, cudaBlockSize.y, cudaBlockSize.z, /* block dim */
+                              0,0, /* shared mem, stream */
+                              &arr[0], /* arguments */
+                              0));
+  CHECK_RESULT(cuCtxSynchronize());
+  return CUDA_SUCCESS;
 }
 
 CUresult cuMemcpyDtoH_(void* dstHost, DCUdeviceptr srcDevice, size_t byteCount) {

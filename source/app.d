@@ -32,7 +32,7 @@ void main() {
 
   int[3] threads = [256, 1, 1];
   int[3] blocks = [(n + threads[0] - 1) / threads[0], 1, 1];
-  kernel.apply(a, b, c, n);
+  kernel(a, b, c, n);
 
   writeln(">>> finished <<<");
 }

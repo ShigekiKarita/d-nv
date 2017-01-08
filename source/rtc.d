@@ -66,13 +66,27 @@ class Kernel {
   static immutable funcHead = `extern "C" __global__ void `;
   string name;
   CUfunction func;
+
+  void* vptr() {
+    return to!(void*)(&func);
+  }
+
   this(string funcName, string funcBody) {
     name = name;
     auto code = funcHead ~ funcName ~ funcBody;
-    func = compile_(funcName.toStringz, code.toStringz);
+    check(compile_(vptr(), funcName.toStringz, code.toStringz));
   }
 
-  void apply(A)(A a, A b, A c, int n) {
-    call_(to!(void*)(func), a.ptr, b.ptr, c.ptr, n);
+  void opCall()() {
+    check(call_(vptr()));
   }
+
+  void opCall(A)(A a, A b, A c, int n) {
+    check(call_(vptr(), a.ptr, b.ptr, c.ptr, n));
+  }
+}
+
+unittest {
+  auto k = new Kernel("foo", "() {}");
+  k();
 }
