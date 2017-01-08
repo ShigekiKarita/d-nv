@@ -63,6 +63,13 @@ unittest {
 }
 
 class Kernel {
+  /*
+    FIXME: CUresult.CUDA_ERROR_INVALID_HANDLE
+    - init device in this or opCall?
+    - multi device support
+
+    FIXME: support a setting of <<<threads, blocks, shared-memory, stream>>>
+  */
   immutable funcHead = `extern "C" __global__ void `;
   const string name;
   CUfunction func; // FIXME make func const
@@ -87,7 +94,25 @@ class Kernel {
 }
 
 unittest {
-  immutable code = "(){int i = blockDim.x * blockIdx.x + threadIdx.x;}";
-  auto k = new Kernel("foo", code);
-  k();
+  import std.random;
+  import std.range;
+
+  auto empty = new Kernel("empty", "(){int i = blockDim.x * blockIdx.x + threadIdx.x;}");
+  empty();
+
+  int n = 10;
+  auto gen = () => new Array!int(generate!(() => uniform!int()).take(n).array());
+  auto a = gen();
+  auto b = gen();
+  auto c = gen();
+  auto saxpy = new Kernel(
+    "saxpy", `(int *A, int *B, int *C, int numElements) {
+      int i = blockDim.x * blockIdx.x + threadIdx.x;
+      if (i < numElements) C[i] = A[i] + B[i];
+    }`);
+
+  saxpy(a, b, c, n);
+  foreach (ai, bi, ci; zip(a.to_cpu(), b.to_cpu(), c.to_cpu())) {
+    assert(ai + bi == ci);
+  }
 }

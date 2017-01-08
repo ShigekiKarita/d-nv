@@ -12,27 +12,6 @@ string nvidia_smi() {
 }
 
 void main() {
-  int n = 100;
-  auto a = new nv.Array!float(n, 0);
-  auto b = new nv.Array!float(n, 0);
-  auto c = new nv.Array!float(n, 0);
-  nvidia_smi().writeln;
-  try {
-    auto c1 = new nv.Array!float(n, 1);
-    nvidia_smi().writeln;
-  } catch (nv.CudaError!CUresult e) {
-    writeln(e.msg ~ "\n there seems to be no device1");
-  }
-
-  auto kernel = new nv.Kernel(
-    "vectorAdd", `(float *A, float *B, float *C, int numElements) {
-      int i = blockDim.x * blockIdx.x + threadIdx.x;
-      // if (i < numElements) C[i] = A[i] + B[i];
-    }`);
-
-  int[3] threads = [256, 1, 1];
-  int[3] blocks = [(n + threads[0] - 1) / threads[0], 1, 1];
-  kernel(a, b, c, n);
-
   writeln(">>> finished <<<");
+  nvidia_smi().writeln;
 }
