@@ -100,6 +100,15 @@ CUresult call_(void* kernel_addr, CUdeviceptr d_A, CUdeviceptr d_B, CUdeviceptr 
 
 CUresult call_(void* kernel_addr);
 
+
+struct CUstream_st;
+alias CUstream = CUstream_st*;
+
+CUresult launch_(void* kernel_addr, void*[] kernel_args,
+                 const size_t[3] grids=[1,1,1], const size_t[3] blocks=[1,1,1],
+                 size_t shared_memory=0, CUstream stream=null);
+
+
 CUresult cuMemcpyDtoH_(void* dstHost, CUdeviceptr srcDevice, size_t byteCount);
 
 CUresult cuMemcpyHtoD_(CUdeviceptr dstDevice, const(void*) srcHost, size_t byteCount);

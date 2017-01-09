@@ -62,6 +62,38 @@ unittest {
   assert(h == d.to_cpu());
 }
 
+struct Code {
+  /*
+    FIXME: template support
+    - see: /usr/local/cuda/samples/0_Simple/simpleTemplates_nvrtc
+   */
+  immutable qualifier = `extern "C" __global__ `;
+  immutable returnType = "void ";
+  const string name;
+  const string args;
+  const string source;
+
+  this(in string nameStr, in string argumentsStr, in string bodyStr) {
+    name = nameStr;
+    args = argumentsStr;
+    source = qualifier ~ returnType ~ nameStr ~ args ~ bodyStr;
+  }
+}
+
+unittest {
+  auto saxpy = Code(
+    "saxpy", "(float *A, float *B, float *C, int numElements)", ` {
+      int i = blockDim.x * blockIdx.x + threadIdx.x;
+      if (i < numElements) C[i] = A[i] + B[i];
+    }`);
+
+  assert(saxpy.source ==
+   `extern "C" __global__ void saxpy(float *A, float *B, float *C, int numElements) {
+      int i = blockDim.x * blockIdx.x + threadIdx.x;
+      if (i < numElements) C[i] = A[i] + B[i];
+    }`);
+}
+
 class Kernel {
   /*
     FIXME: CUresult.CUDA_ERROR_INVALID_HANDLE
@@ -70,18 +102,14 @@ class Kernel {
 
     FIXME: support a setting of <<<threads, blocks, shared-memory, stream>>>
   */
-  immutable funcHead = `extern "C" __global__ void `;
-  const string name;
   CUfunction func; // FIXME make func const
 
   void* vptr() {
     return to!(void*)(&func);
   }
 
-  this(in string funcName, in string funcBody) {
-    name = name;
-    auto code = funcHead ~ funcName ~ funcBody;
-    check(compile_(vptr(), funcName.toStringz, code.toStringz));
+  this(Code code) {
+    check(compile_(vptr(), code.name.toStringz, code.source.toStringz));
   }
 
   void opCall()() {
@@ -97,19 +125,21 @@ unittest {
   import std.random;
   import std.range;
 
-  auto empty = new Kernel("empty", "(){int i = blockDim.x * blockIdx.x + threadIdx.x;}");
+  auto empty = new Kernel(Code(
+    "empty", "()",
+    "{int i = blockDim.x * blockIdx.x + threadIdx.x;}"));
   empty();
 
   int n = 10;
-  auto gen = () => new Array!int(generate!(() => uniform!int()).take(n).array());
+  auto gen = () => new Array!float(generate!(() => uniform(-1.0f, 1.0f)).take(n).array());
   auto a = gen();
   auto b = gen();
   auto c = gen();
-  auto saxpy = new Kernel(
-    "saxpy", `(int *A, int *B, int *C, int numElements) {
+  auto saxpy = new Kernel(Code(
+    "saxpy", "(float *A, float *B, float *C, int numElements)", `{
       int i = blockDim.x * blockIdx.x + threadIdx.x;
       if (i < numElements) C[i] = A[i] + B[i];
-    }`);
+    }`));
 
   saxpy(a, b, c, n);
   foreach (ai, bi, ci; zip(a.to_cpu(), b.to_cpu(), c.to_cpu())) {

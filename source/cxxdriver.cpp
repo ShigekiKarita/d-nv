@@ -150,6 +150,21 @@ CUresult call_(void* kernel_addr) {
   return CUDA_SUCCESS;
 }
 
+CUresult launch_(void* kernel_addr, void* kernel_args[],
+                 const size_t grids[3], const size_t blocks[3],
+                 size_t shared = 0, CUstream stream = NULL) {
+  auto func = (CUfunction*) kernel_addr;
+  CHECK_RESULT(cuLaunchKernel(*func,
+                              grids[0], grids[1], grids[2],
+                              blocks[0], blocks[1], blocks[2],
+                              shared, stream, // FIXME
+                              &kernel_args[0],
+                              0)); // FIXME: what is this arg?
+  CHECK_RESULT(cuCtxSynchronize());
+  return CUDA_SUCCESS;
+}
+
+
 CUresult cuMemcpyDtoH_(void* dstHost, DCUdeviceptr srcDevice, size_t byteCount) {
   return cuMemcpyDtoH(dstHost, static_cast<CUdeviceptr>(srcDevice), byteCount);
 }
