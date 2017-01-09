@@ -26,32 +26,31 @@ void check(Result, string file = __FILE__, int line = __LINE__)(Result result) {
 
 class Array(T) {
   int dev;
-  size_t size;
+  size_t rawLength;
+  size_t length;
   CUdeviceptr ptr;
   T[] cpu_storage;
   this(size_t n, int dev = 0) {
     dev = dev;
-    size = T.sizeof * n;
+    length = n;
+    rawLength = T.sizeof * n;
     check(cudaDeviceInit_(dev));
-    check(cuMemAlloc_(&ptr, size));
+    check(cuMemAlloc_(&ptr, rawLength));
   }
   this(in T[] src, int dev = 0) {
     this(src.length);
     to_gpu(src);
   }
   ~this() {
-    try {
-      check(cuMemFree_(&ptr));
-    } catch (Exception e) {
-    }
+    check(cuMemFree_(&ptr));
   }
   void to_gpu(in T[] src) {
-    cuMemcpyHtoD_(ptr, to!(const(void*))(src.ptr), size);
+    cuMemcpyHtoD_(ptr, to!(const(void*))(src.ptr), rawLength);
   }
   T[] to_cpu() {
-    cpu_storage.length = size / T.sizeof;
+    cpu_storage.length = rawLength / T.sizeof;
     // check(cudaDeviceInit_(dev));
-    check(cuMemcpyDtoH_(to!(void*)(cpu_storage.ptr), ptr, size));
+    check(cuMemcpyDtoH_(to!(void*)(cpu_storage.ptr), ptr, rawLength));
     return cpu_storage;
   }
 }
@@ -105,8 +104,6 @@ void* vptr(F)(ref F f) {
 
 class Kernel {
   /*
-    TODO: generate opCall from code.args
-
     FIXME: CUresult.CUDA_ERROR_INVALID_HANDLE
     - init device in this or opCall?
     - multi device support
@@ -124,13 +121,15 @@ class Kernel {
   }
 
   void opCall(Ts...)(Ts targs) {
+    // TODO: type check between targs and code.args
     void[] vargs;
     foreach (i, t; targs) {
       vargs ~= [vptr(targs[i])];
     }
-    // dim3 grids = {256, 1, 1};
-    // dim3 blocks = {a.size + grids.x - 1, 1, 1};
-    check(launch_(vptr(func), vargs.ptr)); //, &grids, &blocks));
+    uint[] grids = [256, 1, 1];
+    uint bx = to!uint((grids[0] + targs[0].length - 1) / grids[0]);
+    uint[] blocks = [bx, 1, 1];
+    check(launch_(vptr(func), vargs.ptr, grids.ptr, blocks.ptr));
   }
 }
 
@@ -140,9 +139,11 @@ unittest {
   import std.random;
   import std.range;
 
+  /*
   auto empty = new Kernel(Code(
     "empty", "", "int i = blockDim.x * blockIdx.x + threadIdx.x;"));
   empty();
+  */
 
   int n = 10;
   auto gen = () => new Array!float(generate!(() => uniform(-1f, 1f)).take(n).array());

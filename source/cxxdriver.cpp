@@ -151,16 +151,16 @@ CUresult call_(void* kernel_addr) {
   return CUDA_SUCCESS;
 }
 
-CUresult launch_(void* kernel_addr, void* kernel_args) {
-                 // dim3* grids, dim3* blocks,
+CUresult launch_(void* kernel_addr, void* kernel_args,
+                 unsigned int* grids, unsigned int* blocks) {
                  // size_t shared = 0, CUstream stream = NULL) {
   CUfunction* func = (CUfunction*) kernel_addr;
   void** args = (void**) kernel_args;
   CHECK_RESULT(cuLaunchKernel(*func,
-                              // grids.x, grids.y, grids.z,
-                              // blocks.x, blocks.y, blocks.z,
-                              256, 1, 1,
-                              (10 + 256 - 1) / 256, 1, 1,
+                              grids[0], grids[1], grids[2],
+                              blocks[0], blocks[1], blocks[2],
+                              // 256, 1, 1,
+                              // (10 + 256 - 1) / 256, 1, 1,
                               0, 0, // shared, stream, // FIXME
                               &args[0],
                               0)); // FIXME: what is this arg?

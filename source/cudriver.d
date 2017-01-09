@@ -108,8 +108,8 @@ struct dim3 {
   size_t x, y, z;
 }
 // struct dim3;
-CUresult launch_(void* kernel_addr, void* kernel_args);
-                 // dim3* grids, dim3* blocks,
+CUresult launch_(void* kernel_addr, void* kernel_args,
+                 uint* grids, uint* blocks);
                  // size_t shared_memory=0, CUstream stream=null);
 
 
