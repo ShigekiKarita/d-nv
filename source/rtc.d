@@ -123,28 +123,14 @@ class Kernel {
     check(compile_(vfunc, code.name.toStringz, code.source.toStringz));
   }
 
-  void opCall()() {
-    check(call_(vptr(func)));
-  }
-
-  void opCall(A)(A a, A b, A c, int n) {
-    // check(call_(vfunc, a.ptr, b.ptr, c.ptr, n));
-    void[] vargs = [vptr(a), vptr(b), vptr(c), vptr(n)];
-    check(launch_(vptr(func), vargs.ptr));
-  }
-
-  void _opCall(Ts...)(Ts targs) {
-    // check(call_(vptr(), a.ptr, b.ptr, c.ptr, n));
-
-    // void[] args = [vptr(a), vptr(b), vptr(c), vptr(n)];
-    void[] args;
-    args.length = targs.length;
+  void opCall(Ts...)(Ts targs) {
+    void[] vargs;
     foreach (i, t; targs) {
-      args[i] = vptr(t);
+      vargs ~= [vptr(targs[i])];
     }
     // dim3 grids = {256, 1, 1};
     // dim3 blocks = {a.size + grids.x - 1, 1, 1};
-    check(launch_(vptr(func), args.ptr)); //, &grids, &blocks));
+    check(launch_(vptr(func), vargs.ptr)); //, &grids, &blocks));
   }
 }
 
