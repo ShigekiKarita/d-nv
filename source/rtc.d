@@ -1,8 +1,5 @@
-import std.stdio;
 import std.conv;
-import std.format;
 import std.string;
-import std.traits;
 
 import cudriver;
 
@@ -43,7 +40,10 @@ class Array(T) {
     to_gpu(src);
   }
   ~this() {
-    check(cuMemFree_(ptr));
+    try {
+      check(cuMemFree_(&ptr));
+    } catch (Exception e) {
+    }
   }
   void to_gpu(in T[] src) {
     cuMemcpyHtoD_(ptr, to!(const(void*))(src.ptr), size);
@@ -76,26 +76,37 @@ struct Code {
   this(in string nameStr, in string argumentsStr, in string bodyStr) {
     name = nameStr;
     args = argumentsStr;
-    source = qualifier ~ returnType ~ nameStr ~ args ~ bodyStr;
+    source = qualifier ~ returnType ~ nameStr ~
+      "(" ~ args ~ ")" ~
+      "{" ~ bodyStr ~ "}";
   }
 }
 
 unittest {
   auto saxpy = Code(
-    "saxpy", "(float *A, float *B, float *C, int numElements)", ` {
+    "saxpy", "float *A, float *B, float *C, int numElements", `
       int i = blockDim.x * blockIdx.x + threadIdx.x;
       if (i < numElements) C[i] = A[i] + B[i];
-    }`);
-
+    `);
   assert(saxpy.source ==
-   `extern "C" __global__ void saxpy(float *A, float *B, float *C, int numElements) {
+   `extern "C" __global__ void saxpy(float *A, float *B, float *C, int numElements){
       int i = blockDim.x * blockIdx.x + threadIdx.x;
       if (i < numElements) C[i] = A[i] + B[i];
     }`);
 }
 
+void* vptr(F)(ref F f) {
+  static if (is(typeof(f.ptr))) {
+    return to!(void*)(&f.ptr);
+  } else {
+    return to!(void*)(&f);
+  }
+}
+
 class Kernel {
   /*
+    TODO: generate opCall from code.args
+
     FIXME: CUresult.CUDA_ERROR_INVALID_HANDLE
     - init device in this or opCall?
     - multi device support
@@ -104,43 +115,62 @@ class Kernel {
   */
   CUfunction func; // FIXME make func const
 
-  void* vptr() {
+  void* vfunc() {
     return to!(void*)(&func);
   }
 
   this(Code code) {
-    check(compile_(vptr(), code.name.toStringz, code.source.toStringz));
+    check(compile_(vfunc, code.name.toStringz, code.source.toStringz));
   }
 
   void opCall()() {
-    check(call_(vptr()));
+    check(call_(vptr(func)));
   }
 
   void opCall(A)(A a, A b, A c, int n) {
-    check(call_(vptr(), a.ptr, b.ptr, c.ptr, n));
+    // check(call_(vfunc, a.ptr, b.ptr, c.ptr, n));
+    void[] vargs = [vptr(a), vptr(b), vptr(c), vptr(n)];
+    check(launch_(vptr(func), vargs.ptr));
+  }
+
+  void _opCall(Ts...)(Ts targs) {
+    // check(call_(vptr(), a.ptr, b.ptr, c.ptr, n));
+
+    // void[] args = [vptr(a), vptr(b), vptr(c), vptr(n)];
+    void[] args;
+    args.length = targs.length;
+    foreach (i, t; targs) {
+      args[i] = vptr(t);
+    }
+    // dim3 grids = {256, 1, 1};
+    // dim3 blocks = {a.size + grids.x - 1, 1, 1};
+    check(launch_(vptr(func), args.ptr)); //, &grids, &blocks));
   }
 }
 
+
 unittest {
+  import std.stdio;
   import std.random;
   import std.range;
 
   auto empty = new Kernel(Code(
-    "empty", "()",
-    "{int i = blockDim.x * blockIdx.x + threadIdx.x;}"));
+    "empty", "", "int i = blockDim.x * blockIdx.x + threadIdx.x;"));
   empty();
 
   int n = 10;
-  auto gen = () => new Array!float(generate!(() => uniform(-1.0f, 1.0f)).take(n).array());
+  auto gen = () => new Array!float(generate!(() => uniform(-1f, 1f)).take(n).array());
   auto a = gen();
   auto b = gen();
-  auto c = gen();
-  auto saxpy = new Kernel(Code(
-    "saxpy", "(float *A, float *B, float *C, int numElements)", `{
-      int i = blockDim.x * blockIdx.x + threadIdx.x;
-      if (i < numElements) C[i] = A[i] + B[i];
-    }`));
-
+  auto c = new Array!float(n);
+  auto saxpy = new Kernel(
+    Code(
+      "saxpy", q{float *A, float *B, float *C, int numElements},
+      q{
+        int i = blockDim.x * blockIdx.x + threadIdx.x;
+        if (i < numElements) C[i] = A[i] + B[i];
+      })
+    );
   saxpy(a, b, c, n);
   foreach (ai, bi, ci; zip(a.to_cpu(), b.to_cpu(), c.to_cpu())) {
     assert(ai + bi == ci);

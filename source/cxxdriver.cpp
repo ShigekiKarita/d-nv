@@ -47,8 +47,8 @@ CUresult cuMemAlloc_(DCUdeviceptr* dptr, size_t n) {
   return cuMemAlloc(reinterpret_cast<CUdeviceptr*>(dptr), n);
 }
 
-CUresult cuMemFree_(unsigned long dptr) {
-  return cuMemFree(static_cast<CUdeviceptr>(dptr));
+CUresult cuMemFree_(DCUdeviceptr* dptr) {
+  return cuMemFree(*reinterpret_cast<CUdeviceptr*>(dptr));
 }
 
 
@@ -120,12 +120,13 @@ CUresult call_(void* kernel_addr, DCUdeviceptr d_A, DCUdeviceptr d_B, DCUdevicep
   dim3 cudaGridSize(blocksPerGrid, 1, 1);
 
   void *arr[] = { (void *)&d_A, (void *)&d_B, (void *)&d_C, (void *)&numElements };
+  void ** vargs = arr;
   auto func = (CUfunction*) kernel_addr;
   CHECK_RESULT(cuLaunchKernel(*func,
                               cudaGridSize.x, cudaGridSize.y, cudaGridSize.z, /* grid dim */
                               cudaBlockSize.x, cudaBlockSize.y, cudaBlockSize.z, /* block dim */
                               0,0, /* shared mem, stream */
-                              &arr[0], /* arguments */
+                              &vargs[0], /* arguments */
                               0));
   CHECK_RESULT(cuCtxSynchronize());
   return CUDA_SUCCESS;
@@ -150,15 +151,18 @@ CUresult call_(void* kernel_addr) {
   return CUDA_SUCCESS;
 }
 
-CUresult launch_(void* kernel_addr, void* kernel_args[],
-                 const size_t grids[3], const size_t blocks[3],
-                 size_t shared = 0, CUstream stream = NULL) {
-  auto func = (CUfunction*) kernel_addr;
+CUresult launch_(void* kernel_addr, void* kernel_args) {
+                 // dim3* grids, dim3* blocks,
+                 // size_t shared = 0, CUstream stream = NULL) {
+  CUfunction* func = (CUfunction*) kernel_addr;
+  void** args = (void**) kernel_args;
   CHECK_RESULT(cuLaunchKernel(*func,
-                              grids[0], grids[1], grids[2],
-                              blocks[0], blocks[1], blocks[2],
-                              shared, stream, // FIXME
-                              &kernel_args[0],
+                              // grids.x, grids.y, grids.z,
+                              // blocks.x, blocks.y, blocks.z,
+                              256, 1, 1,
+                              (10 + 256 - 1) / 256, 1, 1,
+                              0, 0, // shared, stream, // FIXME
+                              &args[0],
                               0)); // FIXME: what is this arg?
   CHECK_RESULT(cuCtxSynchronize());
   return CUDA_SUCCESS;

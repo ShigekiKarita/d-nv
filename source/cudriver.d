@@ -7,7 +7,7 @@ alias CUdeviceptr = c_ulong;
 
 CUresult cuMemAlloc_(CUdeviceptr* dptr, size_t bytesize);
 
-CUresult cuMemFree_(CUdeviceptr dptr);
+CUresult cuMemFree_(CUdeviceptr* dptr);
 
 CUresult cudaDeviceInit_(int dev);
 
@@ -104,9 +104,13 @@ CUresult call_(void* kernel_addr);
 struct CUstream_st;
 alias CUstream = CUstream_st*;
 
-CUresult launch_(void* kernel_addr, void*[] kernel_args,
-                 const size_t[3] grids=[1,1,1], const size_t[3] blocks=[1,1,1],
-                 size_t shared_memory=0, CUstream stream=null);
+struct dim3 {
+  size_t x, y, z;
+}
+// struct dim3;
+CUresult launch_(void* kernel_addr, void* kernel_args);
+                 // dim3* grids, dim3* blocks,
+                 // size_t shared_memory=0, CUstream stream=null);
 
 
 CUresult cuMemcpyDtoH_(void* dstHost, CUdeviceptr srcDevice, size_t byteCount);
