@@ -23,6 +23,11 @@ void check(Result, string file = __FILE__, int line = __LINE__)(Result result) {
   }
 }
 
+unittest {
+  import std.exception;
+  assertThrown(new Array!float(3, -1));
+}
+
 
 class Array(T) {
   int dev;
