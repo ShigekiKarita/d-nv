@@ -120,6 +120,8 @@ class Kernel {
     check(compile_(vfunc, code.name.toStringz, code.source.toStringz));
   }
 
+  void opCall() {}
+
   void opCall(Ts...)(Ts targs) {
     // TODO: type check between targs and code.args
     void[] vargs;
@@ -139,11 +141,10 @@ unittest {
   import std.random;
   import std.range;
 
-  /*
-  auto empty = new Kernel(Code(
-    "empty", "", "int i = blockDim.x * blockIdx.x + threadIdx.x;"));
+
+  auto empty = new Kernel
+    (Code("empty", "", "int i = blockDim.x * blockIdx.x + threadIdx.x;"));
   empty();
-  */
 
   int n = 10;
   auto gen = () => new Array!float(generate!(() => uniform(-1f, 1f)).take(n).array());

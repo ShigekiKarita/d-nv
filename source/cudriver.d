@@ -96,18 +96,10 @@ alias CUfunction = CUfunction_st*;
 
 nvrtcResult compile_(void* kernel_addr, const(char*) funcname, const(char*) code);
 
-CUresult call_(void* kernel_addr, CUdeviceptr d_A, CUdeviceptr d_B, CUdeviceptr d_C, int numElements);
-
-CUresult call_(void* kernel_addr);
-
 
 struct CUstream_st;
 alias CUstream = CUstream_st*;
 
-struct dim3 {
-  size_t x, y, z;
-}
-// struct dim3;
 CUresult launch_(void* kernel_addr, void* kernel_args,
                  uint* grids, uint* blocks);
                  // size_t shared_memory=0, CUstream stream=null);

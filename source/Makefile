@@ -14,7 +14,7 @@ OBJECTS = cxxdriver.o cudriver.o rtc.o app.o
 %.o: %.cpp
 	g++ -c $^ $(CUDA_COMPILE_FLAGS)
 
-app: $(OBJECTS)
+app: $(OBJECTS) depend
 	g++ -o $@ $(OBJECTS) $(CUDA_LINK_FLAGS) $(DMD_LINK_FLAGS)
 
 all: app
@@ -25,4 +25,9 @@ clean:
 check: app
 	@LD_LIBRARY_PATH=$(DMD_LIBDIR):$(LD_LIBRARY_PATH) ./app
 
-.PHONY: all clean check test
+depend:
+	dmd --version
+	nvcc --version
+	g++ --version
+
+.PHONY: all clean check test depend

@@ -82,7 +82,6 @@ CUresult cudaDeviceInit_(int id) {
 #include <nvrtc_helper.h>
 
 
-// FIXME: use CHECK_RESULT and return nvrtcResult instead of CUfunction
 nvrtcResult compile_(void* kernel_addr, const char* funcname, const char* code) {
   // compile
   std::string filename(funcname);
@@ -105,51 +104,12 @@ nvrtcResult compile_(void* kernel_addr, const char* funcname, const char* code) 
   NVRTC_SAFE_CALL("nvrtcGetPTX", nvrtcGetPTX(prog, ptx.get()));
   NVRTC_SAFE_CALL("nvrtcDestroyProgram", nvrtcDestroyProgram(&prog));
 
-  CUmodule module = loadPTX(ptx.get(), 0, NULL); /// ???
+  // FIXME: split these to another function to return 
+  CUmodule module = loadPTX(ptx.get(), 0, NULL); // ???
   checkCudaErrors(cuModuleGetFunction((CUfunction*) kernel_addr, module, funcname));
   return NVRTC_SUCCESS;
 }
 
-
-// FIXME: use CHECK_RESULT instead of CUfunction and return CUresult
-CUresult call_(void* kernel_addr, DCUdeviceptr d_A, DCUdeviceptr d_B, DCUdeviceptr d_C, int numElements) {
-  int threadsPerBlock = 256;
-  int blocksPerGrid =(numElements + threadsPerBlock - 1) / threadsPerBlock;
-  printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
-  dim3 cudaBlockSize(threadsPerBlock,1,1);
-  dim3 cudaGridSize(blocksPerGrid, 1, 1);
-
-  void *arr[] = { (void *)&d_A, (void *)&d_B, (void *)&d_C, (void *)&numElements };
-  void ** vargs = arr;
-  auto func = (CUfunction*) kernel_addr;
-  CHECK_RESULT(cuLaunchKernel(*func,
-                              cudaGridSize.x, cudaGridSize.y, cudaGridSize.z, /* grid dim */
-                              cudaBlockSize.x, cudaBlockSize.y, cudaBlockSize.z, /* block dim */
-                              0,0, /* shared mem, stream */
-                              &vargs[0], /* arguments */
-                              0));
-  CHECK_RESULT(cuCtxSynchronize());
-  return CUDA_SUCCESS;
-}
-
-CUresult call_(void* kernel_addr) {
-  int threadsPerBlock = 256;
-  int blocksPerGrid =(100 + threadsPerBlock - 1) / threadsPerBlock;
-  printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
-  dim3 cudaBlockSize(threadsPerBlock,1,1);
-  dim3 cudaGridSize(blocksPerGrid, 1, 1);
-
-  void *arr[] = {};
-  auto func = (CUfunction*) kernel_addr;
-  CHECK_RESULT(cuLaunchKernel(*func,
-                              cudaGridSize.x, cudaGridSize.y, cudaGridSize.z, /* grid dim */
-                              cudaBlockSize.x, cudaBlockSize.y, cudaBlockSize.z, /* block dim */
-                              0,0, /* shared mem, stream */
-                              &arr[0], /* arguments */
-                              0));
-  CHECK_RESULT(cuCtxSynchronize());
-  return CUDA_SUCCESS;
-}
 
 CUresult launch_(void* kernel_addr, void* kernel_args,
                  unsigned int* grids, unsigned int* blocks) {
@@ -159,8 +119,6 @@ CUresult launch_(void* kernel_addr, void* kernel_args,
   CHECK_RESULT(cuLaunchKernel(*func,
                               grids[0], grids[1], grids[2],
                               blocks[0], blocks[1], blocks[2],
-                              // 256, 1, 1,
-                              // (10 + 256 - 1) / 256, 1, 1,
                               0, 0, // shared, stream, // FIXME
                               &args[0],
                               0)); // FIXME: what is this arg?
