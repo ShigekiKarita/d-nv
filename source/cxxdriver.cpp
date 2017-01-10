@@ -93,20 +93,20 @@ nvrtcResult compile_(void* kernel_addr, const char* funcname, const char* code) 
   // dump log
   size_t logSize;
   NVRTC_SAFE_CALL("nvrtcGetProgramLogSize", nvrtcGetProgramLogSize(prog, &logSize));
-  auto log = make_unique<char[]>(sizeof(char) * logSize + 1);
+  auto log = make_unique<char[]>(logSize + 1);
   NVRTC_SAFE_CALL("nvrtcGetProgramLog", nvrtcGetProgramLog(prog, log.get()));
   log[logSize] = '\x0';
 
   // fetch PTX
   size_t ptxSize;
   NVRTC_SAFE_CALL("nvrtcGetPTXSize", nvrtcGetPTXSize(prog, &ptxSize));
-  auto ptx = make_unique<char[]>(sizeof(char) * ptxSize + 1);
+  auto ptx = make_unique<char[]>(ptxSize + 1);
   NVRTC_SAFE_CALL("nvrtcGetPTX", nvrtcGetPTX(prog, ptx.get()));
   NVRTC_SAFE_CALL("nvrtcDestroyProgram", nvrtcDestroyProgram(&prog));
 
   // FIXME: split these to another function to return 
   CUmodule module = loadPTX(ptx.get(), 0, NULL); // ???
-  checkCudaErrors(cuModuleGetFunction((CUfunction*) kernel_addr, module, funcname));
+  checkCudaErrors(cuModuleGetFunction(reinterpret_cast<CUfunction*>(kernel_addr), module, funcname));
   return NVRTC_SUCCESS;
 }
 
@@ -114,8 +114,8 @@ nvrtcResult compile_(void* kernel_addr, const char* funcname, const char* code) 
 CUresult launch_(void* kernel_addr, void* kernel_args,
                  unsigned int* grids, unsigned int* blocks) {
                  // size_t shared = 0, CUstream stream = NULL) {
-  CUfunction* func = (CUfunction*) kernel_addr;
-  void** args = (void**) kernel_args;
+  auto func = reinterpret_cast<CUfunction*>(kernel_addr);
+  auto args = reinterpret_cast<void**>(kernel_args);
   CHECK_RESULT(cuLaunchKernel(*func,
                               grids[0], grids[1], grids[2],
                               blocks[0], blocks[1], blocks[2],
