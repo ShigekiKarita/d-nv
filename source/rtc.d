@@ -31,6 +31,9 @@ unittest {
 
 
 class Array(T) {
+  alias Element = T;
+  alias Storage = T*;
+
   int dev;
   size_t rawLength;
   size_t length;
@@ -65,6 +68,8 @@ unittest {
   float[] h = [1,2,3];
   auto d = new Array!float(h);
   assert(h == d.to_cpu());
+  static assert(is(typeof(d).Storage == float*));
+  static assert(is(typeof(d).Element == float));
 }
 
 struct Code {
@@ -168,7 +173,7 @@ class TypedKernel(Code c) {
 
   void opCall(Ts...)(Ts targs) {
     // TODO: convert targs[i] to targs[i].ptr if it has .ptr method
-    assertAssignableArgs!kargs(targs);
+    staticAssert!(AssignableArgTypes, kargs)(targs);
     void[] vargs;
     foreach (i, t; targs) {
       vargs ~= [vptr(targs[i])];
@@ -208,7 +213,6 @@ unittest {
     assert(ai + bi == ci);
   }
 
-  /*
   enum code = Code(
       "saxpy", q{float *A, float *B, float *C, int numElements},
       q{
@@ -220,5 +224,4 @@ unittest {
   foreach (ai, bi, ci; zip(a.to_cpu(), b.to_cpu(), c.to_cpu())) {
     assert(ai + bi == ci);
   }
-  */
 }

@@ -15,15 +15,16 @@ unittest {
   auto a = gen();
   auto b = gen();
   auto c = new Array!float(n);
-  auto saxpy = new Kernel(
-    Code(
+  enum code = Code(
       "saxpy", q{float *A, float *B, float *C, int numElements},
       q{
         int i = blockDim.x * blockIdx.x + threadIdx.x;
         if (i < numElements) C[i] = A[i] + B[i];
-      })
-    );
-  saxpy(a, b, c, n);
+      });
+  auto saxpy = new TypedKernel!(code)();
+  saxpy(a, b, c, n); // type-checked at compile-time. 
+  // compile error: saxpy(a, b, c), saxpy(a, b, c, 3f)
+
   foreach (ai, bi, ci; zip(a.to_cpu(), b.to_cpu(), c.to_cpu())) {
     assert(ai + bi == ci);
   }
@@ -38,8 +39,12 @@ unittest {
 1. (DONE) allocate memory on multiple devices with CUDA Driver API
 1. (DONE) GPU device <-> CPU host memory transfer
 1. (DONE) compile a kernel of raw string with NVRTC
-1. (WIP) launch a kernel function
+1. (DONE) launch a kernel function
+1. (DONE) type-check of kernel's arguments at compile-time
+1. (WIP) naive type-check of kernel's arguments at run-time
+1. (WIP) user-friendly config of <<<grids, blocks, shared-memory, stream>>>
 1. support template kernels
+1. support static compilation of CUDA kernel (just linking objects without NVRTC?)
 
 (v1.0 -)
 

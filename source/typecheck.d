@@ -9,14 +9,14 @@ struct Param(string args) {
 }
 
 
-bool predicate(alias policy, string kargs, Args ...)(Args args) {
-  return policy!(kargs, Args);
+bool predicate(alias trait, string kargs, Args ...)(Args args) {
+  return trait!(kargs, Args);
 }
 
-void staticAssert(alias policy, string kargs, Args ...)(Args args) {
-  static assert(policy!(kargs, Args),
-                "\nleft  args:(%s)\nright args:%s\nthis right args violate the <%s> policy"
-                .format(kargs, Args.stringof, policy.stringof.split("(")[0]));
+void staticAssert(alias trait, string kargs, Args ...)(Args args) {
+  static assert(trait!(kargs, Args),
+                "\nleft  args:(%s)\nright args:%s\nthis right args violate the <%s> trait"
+                .format(kargs, Args.stringof, trait.stringof.split("(")[0]));
 }
 
 
@@ -38,14 +38,28 @@ unittest {
   static assert(!__traits(compiles, staticAssert!(EqualArgTypes, NG)(i, f.ptr, c.ptr)));
 }
 
+enum bool isCudaAssignable(L, R) = function() {
+  static if (is(typeof({R.Storage s = null;}))) {
+    return isAssignable!(L, R.Storage);
+  } else {
+    return isAssignable!(L, R);
+  }
+}();
 
 enum bool AssignableArgTypes(string kargs, Args ...) = function() {
   alias KArgs = Param!kargs.Args;
-  bool ok = true;
-  foreach (i, a; Args) {
-    ok &= isAssignable!(KArgs[i], Args[i]);
+  if (KArgs.length != Args.length) {
+    return false;
   }
-  return ok;
+  
+  bool ok = true;
+  foreach (i, _; Args) {
+    ok &= isCudaAssignable!(KArgs[i], Args[i]);
+    if (!ok) {
+      return false;
+    }
+  }
+  return true;
 }();
 
 unittest {
@@ -61,4 +75,9 @@ unittest {
   staticAssert!(AssignableArgTypes, OK)(i, f.ptr, c.ptr);
   // staticAssert!(AssignableArgTypes, NG)(i, f.ptr, c.ptr);
   static assert(!__traits(compiles, staticAssert!(AssignableArgTypes, NG)(i, f.ptr, c.ptr)));
+}
+
+unittest {
+  import rtc;
+  static assert(isCudaAssignable!(float*, Array!float));
 }
