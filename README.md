@@ -42,7 +42,7 @@ unittest {
 1. (DONE) launch a kernel function
 1. (DONE) type-check of kernel's arguments at compile-time
 1. (WIP) naive type-check of kernel's arguments at run-time
-1. (WIP) user-friendly config of <<<grids, blocks, shared-memory, stream>>>
+1. (WIP) user-friendly config of `<<<grids, blocks, shared-memory, stream>>>`
 1. support template kernels
 1. support static compilation of CUDA kernel (just linking objects without NVRTC?)
 
