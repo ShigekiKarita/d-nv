@@ -2,6 +2,7 @@ import std.conv;
 import std.string;
 
 import cudriver;
+import typecheck;
 
 
 class CudaError(Result) : Exception {
@@ -116,19 +117,21 @@ class Kernel {
     FIXME: support a setting of <<<threads, blocks, shared-memory, stream>>>
   */
   CUfunction func; // FIXME make func const
+  const Code code;
 
   void* vfunc() {
     return to!(void*)(&func);
   }
 
-  this(Code code) {
+  this(Code c) {
+    code = c;
     check(compile_(vfunc, code.name.toStringz, code.source.toStringz));
   }
 
   void opCall() {}
 
   void opCall(Ts...)(Ts targs) {
-    // TODO: type check between targs and code.args
+    // TODO: type check between targs and code.args (runtime ver.)
     void[] vargs;
     foreach (i, t; targs) {
       vargs ~= [vptr(targs[i])];
@@ -140,6 +143,42 @@ class Kernel {
   }
 }
 
+
+class TypedKernel(Code c) {
+  /*
+    FIXME: CUresult.CUDA_ERROR_INVALID_HANDLE
+    - init device in this or opCall?
+    - multi device support
+
+    FIXME: support a setting of <<<threads, blocks, shared-memory, stream>>>
+  */
+  CUfunction func; // FIXME make func const
+  immutable Code code = c;
+  immutable string kargs = c.args;
+
+  void* vfunc() {
+    return to!(void*)(&func);
+  }
+
+  this() {
+    check(compile_(vfunc, code.name.toStringz, code.source.toStringz));
+  }
+
+  void opCall() {}
+
+  void opCall(Ts...)(Ts targs) {
+    // TODO: convert targs[i] to targs[i].ptr if it has .ptr method
+    assertAssignableArgs!kargs(targs);
+    void[] vargs;
+    foreach (i, t; targs) {
+      vargs ~= [vptr(targs[i])];
+    }
+    uint[] grids = [256, 1, 1];
+    uint bx = to!uint((grids[0] + targs[0].length - 1) / grids[0]);
+    uint[] blocks = [bx, 1, 1];
+    check(launch_(vptr(func), vargs.ptr, grids.ptr, blocks.ptr));
+  }
+}
 
 unittest {
   import std.stdio;
@@ -168,4 +207,18 @@ unittest {
   foreach (ai, bi, ci; zip(a.to_cpu(), b.to_cpu(), c.to_cpu())) {
     assert(ai + bi == ci);
   }
+
+  /*
+  enum code = Code(
+      "saxpy", q{float *A, float *B, float *C, int numElements},
+      q{
+        int i = blockDim.x * blockIdx.x + threadIdx.x;
+        if (i < numElements) C[i] = A[i] + B[i];
+      });
+  auto tsaxpy = new TypedKernel!(code)();
+  tsaxpy(a, b, c, n);
+  foreach (ai, bi, ci; zip(a.to_cpu(), b.to_cpu(), c.to_cpu())) {
+    assert(ai + bi == ci);
+  }
+  */
 }

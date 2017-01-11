@@ -6,7 +6,7 @@ DMD_COMPILE_FLAGS = -debug -g -gc -m64 -unittest -cov
 DMD_LIBDIR = $(shell dirname $(shell which dmd))/../lib64
 DMD_LINK_FLAGS = -lphobos2 -L $(DMD_LIBDIR)
 
-OBJECTS = cxxdriver.o cudriver.o rtc.o app.o
+OBJECTS = cxxdriver.o cudriver.o rtc.o app.o typecheck.o
 
 %.o: %.d
 	dmd -c $^ $(DMD_COMPILE_FLAGS)
