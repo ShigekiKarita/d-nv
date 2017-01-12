@@ -73,4 +73,4 @@ $ make
 $ make -C source coverage
 ```
 
-current status -> [coverage.txt]
+[current status](coverage.txt)
