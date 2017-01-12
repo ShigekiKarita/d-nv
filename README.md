@@ -21,7 +21,7 @@ unittest {
         int i = blockDim.x * blockIdx.x + threadIdx.x;
         if (i < numElements) C[i] = A[i] + B[i];
       });
-  auto saxpy = new TypedKernel!(code)();
+  auto saxpy = new TypedKernel!(code);
   saxpy(a, b, c, n); // type-checked at compile-time. 
   // compile error: saxpy(a, b, c), saxpy(a, b, c, 3f)
 

@@ -114,7 +114,7 @@ void* vptr(F)(ref F f) {
 }
 
 
-class KernelBase(Launcher, TypeChecker = UnsafeTypeChecker) {
+class KernelBase(Launcher, TypeChecker) {
   /*
     FIXME: CUresult.CUDA_ERROR_INVALID_HANDLE
     - init device in this or opCall?
@@ -130,6 +130,16 @@ class KernelBase(Launcher, TypeChecker = UnsafeTypeChecker) {
   CUfunction func;
   Launcher launch;
   TypeChecker typeCheck;
+
+  static if (is(typeof(typeCheck.cargs))) {
+    this() {
+      typeCheck.compile(vfunc, typeCheck.code);
+    }
+  } else {
+    this(Code code) {
+      typeCheck.compile(vfunc, code);
+    }
+  }
 
   void* vfunc() {
     return to!(void*)(&func);
@@ -151,14 +161,21 @@ class KernelBase(Launcher, TypeChecker = UnsafeTypeChecker) {
 }
 
 struct UnsafeTypeChecker {
+  static void compile(void* vfunc, Code c) {
+    check(compile_(vfunc, c.name.toStringz, c.source.toStringz));
+  }
   void opCall(Args...)(Args args) {}
 }
 
 struct StaticTypeChecker(Code c) {
-  enum Code code = c;
+  immutable Code code = c;
+  immutable cargs = c.args;
+  static void compile(void* vfunc, Code c) {
+    check(compile_(vfunc, c.name.toStringz, c.source.toStringz));
+  }
   void opCall(Args...)(Args targs) {
     // FIXME: cannot call
-    staticAssert!(AssignableArgTypes, code.args)(targs);
+    staticAssert!(AssignableArgTypes, cargs)(targs);
   }
 }
 
@@ -172,31 +189,10 @@ struct SimpleLauncher {
   }
 }
 
-class RuntimeKernel(L = SimpleLauncher) : KernelBase!L {
-  const Code code;
-  this(Code c) {
-    code = c;
-    check(compile_(vfunc, code.name.toStringz, code.source.toStringz));
-  }
+alias RuntimeKernel(L = SimpleLauncher) = KernelBase!(L, UnsafeTypeChecker);
 
-  void opCall(Ts...)(Ts targs) {
-    // TODO: type check between targs and code.args (runtime ver.)
-    super.opCall(targs);
-  }
-}
+alias TypedKernel(Code code, L = SimpleLauncher) = KernelBase!(L, StaticTypeChecker!code);
 
-class TypedKernel(Code c) : KernelBase!SimpleLauncher {
-  immutable Code code = c;
-  immutable string kargs = c.args;
-  this() {
-    check(compile_(vfunc, code.name.toStringz, code.source.toStringz));
-  }
-
-  void opCall(Ts...)(Ts targs) {
-    staticAssert!(AssignableArgTypes, kargs)(targs);
-    super.opCall(targs);
-  }
-}
 
 unittest {
   import std.stdio;
@@ -232,7 +228,7 @@ unittest {
         int i = blockDim.x * blockIdx.x + threadIdx.x;
         if (i < numElements) C[i] = A[i] + B[i];
       });
-  auto tsaxpy = new TypedKernel!(code)();
+  auto tsaxpy = new TypedKernel!(code);
   tsaxpy(a, b, c, n);
   foreach (ai, bi, ci; zip(a.to_cpu(), b.to_cpu(), c.to_cpu())) {
     assert(ai + bi == ci);
