@@ -113,75 +113,88 @@ void* vptr(F)(ref F f) {
   }
 }
 
-class Kernel {
+
+class KernelBase(Launcher, TypeChecker = UnsafeTypeChecker) {
   /*
     FIXME: CUresult.CUDA_ERROR_INVALID_HANDLE
     - init device in this or opCall?
     - multi device support
 
-    FIXME: support a setting of <<<threads, blocks, shared-memory, stream>>>
+    FIXME: support a setting of Launcher
+    - it provides <<<threads, blocks, shared-memory, stream>>>
+
+    NOTE: Kernel can be factored into Kernel!(Launcher, TypeChecker)
+    - TypeChecker: Static, Dynamic, Unsafe ... and user-defined
+    - Launcher: Simple, Heavy, Shared, Async ... and user-defined
   */
-  CUfunction func; // FIXME make func const
-  const Code code;
+  CUfunction func;
+  Launcher launch;
+  TypeChecker typeCheck;
 
   void* vfunc() {
     return to!(void*)(&func);
   }
 
+  void opCall() {}
+
+  void opCall(Ts...)(Ts targs) {
+    typeCheck(targs);
+
+    void[] vargs;
+    foreach (i, t; targs) {
+      vargs ~= [vptr(targs[i])];
+    }
+
+    launch.setup(targs);
+    check(launch_(vptr(func), vargs.ptr, launch.grids.ptr, launch.blocks.ptr));
+  }
+}
+
+struct UnsafeTypeChecker {
+  void opCall(Args...)(Args args) {}
+}
+
+struct StaticTypeChecker(Code c) {
+  enum Code code = c;
+  void opCall(Args...)(Args targs) {
+    // FIXME: cannot call
+    staticAssert!(AssignableArgTypes, code.args)(targs);
+  }
+}
+
+struct SimpleLauncher {
+  uint[3] grids = [256, 1, 1];
+  uint[3] blocks;
+
+  void setup(Args...)(Args targs) {
+    uint bx = to!uint((grids[0] + targs[0].length - 1) / grids[0]);
+    blocks = [bx, 1, 1];
+  }
+}
+
+class RuntimeKernel(L = SimpleLauncher) : KernelBase!L {
+  const Code code;
   this(Code c) {
     code = c;
     check(compile_(vfunc, code.name.toStringz, code.source.toStringz));
   }
 
-  void opCall() {}
-
   void opCall(Ts...)(Ts targs) {
     // TODO: type check between targs and code.args (runtime ver.)
-    void[] vargs;
-    foreach (i, t; targs) {
-      vargs ~= [vptr(targs[i])];
-    }
-    uint[] grids = [256, 1, 1];
-    uint bx = to!uint((grids[0] + targs[0].length - 1) / grids[0]);
-    uint[] blocks = [bx, 1, 1];
-    check(launch_(vptr(func), vargs.ptr, grids.ptr, blocks.ptr));
+    super.opCall(targs);
   }
 }
 
-
-class TypedKernel(Code c) {
-  /*
-    FIXME: CUresult.CUDA_ERROR_INVALID_HANDLE
-    - init device in this or opCall?
-    - multi device support
-
-    FIXME: support a setting of <<<threads, blocks, shared-memory, stream>>>
-  */
-  CUfunction func; // FIXME make func const
+class TypedKernel(Code c) : KernelBase!SimpleLauncher {
   immutable Code code = c;
   immutable string kargs = c.args;
-
-  void* vfunc() {
-    return to!(void*)(&func);
-  }
-
   this() {
     check(compile_(vfunc, code.name.toStringz, code.source.toStringz));
   }
 
-  void opCall() {}
-
   void opCall(Ts...)(Ts targs) {
-    // TODO: convert targs[i] to targs[i].ptr if it has .ptr method
     staticAssert!(AssignableArgTypes, kargs)(targs);
-    void[] vargs;
-    foreach (i, t; targs) {
-      vargs ~= [vptr(targs[i])];
-    }
-    uint[] grids = [256, 1, 1];
-    uint bx = to!uint((grids[0] + targs[0].length - 1) / grids[0]);
-    uint[] blocks = [bx, 1, 1];
-    check(launch_(vptr(func), vargs.ptr, grids.ptr, blocks.ptr));
+    super.opCall(targs);
   }
 }
 
@@ -191,7 +204,7 @@ unittest {
   import std.range;
 
 
-  auto empty = new Kernel
+  auto empty = new RuntimeKernel!()
     (Code("empty", "", "int i = blockDim.x * blockIdx.x + threadIdx.x;"));
   empty();
 
@@ -200,7 +213,7 @@ unittest {
   auto a = gen();
   auto b = gen();
   auto c = new Array!float(n);
-  auto saxpy = new Kernel(
+  auto saxpy = new RuntimeKernel!()(
     Code(
       "saxpy", q{float *A, float *B, float *C, int numElements},
       q{
