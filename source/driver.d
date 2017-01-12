@@ -1,11 +1,8 @@
-import parser;
+import error;
 import core.stdc.config;
 
 
 extern (C++):
-
-mixin(enumCUresultMixin);
-mixin(enumNvrtcResultMixin);
 
 alias CUdeviceptr = c_ulong;
 

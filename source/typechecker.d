@@ -78,6 +78,7 @@ unittest {
 }
 
 unittest {
+  import storage;
   import compiler;
   static assert(isCudaAssignable!(float*, Array!float));
 }

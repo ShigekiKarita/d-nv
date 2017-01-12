@@ -6,7 +6,7 @@ DMD_COMPILE_FLAGS = -debug -g -gc -m64 -unittest -cov -J$(CUDA_DIR)/include
 DMD_LIBDIR = $(shell dirname $(shell which dmd))/../lib64
 DMD_LINK_FLAGS = -lphobos2 -L $(DMD_LIBDIR)
 
-OBJECTS = cxxdriver.o driver.o compiler.o app.o typechecker.o parser.o storage.o error.o
+OBJECTS = cxxdriver.o driver.o compiler.o app.o typechecker.o storage.o error.o
 
 %.test: %.d
 	rdmd --main $(DMD_COMPILE_FLAGS) $^
