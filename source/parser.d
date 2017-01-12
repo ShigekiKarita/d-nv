@@ -36,7 +36,7 @@ enum enumCUresultMixin = CImportEnum!("CUresult", "cuda.h");
 enum enumNvrtcResultMixin = CImportEnum!("nvrtcResult", "nvrtc.h");
 
 unittest {
-  import cudriver : CUresult, nvrtcResult;
+  import driver : CUresult, nvrtcResult;
   static assert(CUresult.CUDA_ERROR_UNKNOWN == 999);
   static assert(nvrtcResult.NVRTC_SUCCESS == 0);
 }

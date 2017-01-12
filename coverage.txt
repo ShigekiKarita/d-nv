@@ -1,0 +1,5 @@
+driver.d has no code
+compiler.d is 100% covered
+app.d is 100% covered
+typechecker.d is 100% covered
+parser.d is 100% covered

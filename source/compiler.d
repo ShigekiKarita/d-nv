@@ -1,8 +1,8 @@
 import std.conv;
 import std.string;
 
-import cudriver;
-import typecheck;
+import driver;
+import typechecker;
 
 
 class CudaError(Result) : Exception {

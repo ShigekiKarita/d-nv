@@ -6,7 +6,7 @@ DMD_COMPILE_FLAGS = -debug -g -gc -m64 -unittest -cov -J$(CUDA_DIR)/include
 DMD_LIBDIR = $(shell dirname $(shell which dmd))/../lib64
 DMD_LINK_FLAGS = -lphobos2 -L $(DMD_LIBDIR)
 
-OBJECTS = cxxdriver.o cudriver.o rtc.o app.o typecheck.o parser.o
+OBJECTS = cxxdriver.o driver.o compiler.o app.o typechecker.o parser.o
 
 %.test: %.d
 	rdmd --main $(DMD_COMPILE_FLAGS) $^
@@ -30,7 +30,7 @@ check: app
 
 coverage: check
 	@find . -name "*.lst" -print | xargs -I{} sh -c \
-	"grep -A1 -B1 -n --color=auto  0000000 {}; tail -n 1 {}"
+	"grep -A1 -B1 -n --color=auto  0000000 {}; tail -n 1 {}" 2>&1 | tee ../coverage.txt
 
 depend:
 	dmd --version

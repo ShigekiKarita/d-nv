@@ -2,12 +2,12 @@
 */
 
 !source
-!cpp-nvrtc
 
 !*.d
 !*.cpp
 !*.cu
 !*.md
 
+!coverage.txt
 !.gitignore
 !Makefile

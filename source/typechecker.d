@@ -78,6 +78,6 @@ unittest {
 }
 
 unittest {
-  import rtc;
+  import compiler;
   static assert(isCudaAssignable!(float*, Array!float));
 }

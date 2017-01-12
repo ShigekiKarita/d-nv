@@ -31,7 +31,6 @@ unittest {
 }
 ```
 
-
 ## roadmap
 
 (- v1.0)
@@ -64,3 +63,14 @@ unittest {
 + /usr/local/cuda/doc/pdf/NVRTC_User_Guide.pdf
 + /usr/local/cuda/doc/pdf/
 
+
+## development
+
+how to build and unittest 
+
+```
+$ make
+$ make -C source coverage
+```
+
+current status -> [coverage.txt]
