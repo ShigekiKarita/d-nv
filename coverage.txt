@@ -1,5 +1,24 @@
 driver.d has no code
-compiler.d is 100% covered
+44-       |  static void build(void* vfunc, Code c) {
+45:0000000|    check(compile_(vfunc, c.name.toStringz, c.source.toStringz));
+46-       |  }
+compiler.d is 85% covered
 app.d is 100% covered
 typechecker.d is 100% covered
 parser.d is 100% covered
+22-       |  }
+23:0000000|  this(in T[] src, int dev = 0) {
+24:0000000|    this(src.length);
+25:0000000|    to_gpu(src);
+26-       |  }
+storage.d is 86% covered
+6-       |
+7:0000000|  this(Result r, string file = __FILE__, int line = __LINE__) {
+8:0000000|    result = r;
+9:0000000|    super(toString, file, line);
+10-       |  }
+--
+12-       |  override string toString() {
+13:0000000|    return Result.stringof ~ "." ~ result.to!string;
+14-       |  }
+error.d is 60% covered
