@@ -17,6 +17,9 @@ OBJECTS = cxxdriver.o driver.o compiler.o app.o typechecker.o storage.o error.o
 %.o: %.cpp
 	g++ -c $^ $(CUDA_COMPILE_FLAGS)
 
+../lib%.so: %.cpp
+	g++ $^ $(CUDA_COMPILE_FLAGS) -fPIC -shared -o $@
+
 app: $(OBJECTS) depend
 	g++ -o $@ $(OBJECTS) $(CUDA_LINK_FLAGS) $(DMD_LINK_FLAGS)
 

@@ -8,6 +8,7 @@
 !*.cu
 !*.md
 
-!coverage.txt
+!dub.json
+!coverage
 !.gitignore
 !Makefile
