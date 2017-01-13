@@ -1,5 +1,7 @@
 # d-nvrtc
 
+[![Coverage Status](https://coveralls.io/repos/github/ShigekiKarita/d-nvrtc/badge.svg?branch=master)](https://coveralls.io/github/ShigekiKarita/d-nvrtc?branch=master)
+
 just work in progress
 
 usage (from [rtc.d](/source/rtc.d))
@@ -40,6 +42,9 @@ unittest {
 1. (DONE) compile a kernel of raw string with NVRTC
 1. (DONE) launch a kernel function
 1. (DONE) type-check of kernel's arguments at compile-time
+1. (DONE) build with dub
+1. (DONE) Coveralls support using [doveralls](https://github.com/ColdenCullen/doveralls)
+1. (WIP) add benchmark and example using d-nvrtc as a library
 1. (WIP) naive type-check of kernel's arguments at run-time
 1. (WIP) user-friendly config of `<<<grids, blocks, shared-memory, stream>>>`
 1. support template kernels
