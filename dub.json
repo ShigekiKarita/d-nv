@@ -1,11 +1,11 @@
 {
-	  "name": "d-nvrtc",
-	  "authors": [
-		    "karita"
-	  ],
-	  "description": "NVRTC wrapper for D",
-	  "copyright": "Copyright © 2017, karita",
-	  "license": "Boost",
+    "name": "d-nvrtc",
+    "authors": [
+        "karita"
+    ],
+    "description": "NVRTC wrapper for D",
+    "copyright": "Copyright © 2017, karita",
+    "license": "Boost",
     "dflags" : [
         "-J/usr/local/cuda/include/"
     ],

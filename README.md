@@ -69,8 +69,7 @@ unittest {
 how to build and unittest 
 
 ```
-$ make
-$ make -C source coverage
+$ make coverage
 ```
 
 [current coverage](coverage)
