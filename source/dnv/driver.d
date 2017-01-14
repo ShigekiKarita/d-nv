@@ -1,4 +1,6 @@
-import error;
+module dnv.driver;
+import dnv.error;
+
 import core.stdc.config;
 
 

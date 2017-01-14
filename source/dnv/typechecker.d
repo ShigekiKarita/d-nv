@@ -1,3 +1,5 @@
+module dnv.typechecker;
+
 import std.string : format, split;
 import std.meta;
 import std.traits;
@@ -78,7 +80,7 @@ unittest {
 }
 
 unittest {
-  import storage;
-  import compiler;
+  import dnv.storage;
+  import dnv.compiler;
   static assert(isCudaAssignable!(float*, Array!float));
 }

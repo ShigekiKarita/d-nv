@@ -1,7 +1,9 @@
+module dnv.storage;
+
 import std.conv : to;
 
-import error;
-import driver;
+import dnv.error;
+import dnv.driver;
 
 
 class Array(T) {

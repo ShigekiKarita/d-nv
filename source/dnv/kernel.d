@@ -1,7 +1,11 @@
-import storage;
-import compiler;
-import driver;
-import error;
+module dnv.kernel;
+
+import std.conv : to;
+
+import dnv.storage;
+import dnv.compiler;
+import dnv.driver;
+import dnv.error;
 
 
 void* vptr(F)(ref F f) {

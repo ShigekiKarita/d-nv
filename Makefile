@@ -1,11 +1,15 @@
-SUBDIRS := source
+SUBDIRS := source/dnv
+CUDA_DIR = $(shell dirname $(shell which nvcc))/..
+CUDA_COMPILE_FLAGS = -Wall -Wextra -g3 -O0 -I $(CUDA_DIR)/samples/common/inc -std=c++11 # --gpu-architecture=compute_60 --gpu-code=sm_60,compute_60
+CUDA_LINK_FLAGS = -lcuda -lnvrtc -lcudart -L $(CUDA_DIR)/lib64
+
 
 .PHONY: all $(SUBDIRS) coverage clean coveralls
 $(SUBDIRS):
 	$(MAKE) -C $@
 
-libcxxdriver.so: source/cxxdriver.cpp
-	make -C source ../$@
+libcxxdriver.so: $(SUBDIRS)/cxxdriver.cpp
+	g++ $^ $(CUDA_COMPILE_FLAGS) -fPIC -shared -o $@
 
 d-nvrtc: dub.json libcxxdriver.so
 	dub --build=unittest-cov
@@ -20,6 +24,6 @@ coveralls:
 
 clean:
 	dub clean
-	make -C source clean
+	make -C $(SUBDIRS) clean
 	rm -rf *.lst *.so d-nvrtc
 

@@ -9,6 +9,7 @@
     "dflags" : [
         "-J/usr/local/cuda/include/"
     ],
+    "importPaths": [".", "./source", "./source/dnv"],
     "libs": [
         "cxxdriver",
         "cuda",
@@ -23,5 +24,12 @@
         "warnings",
         "unittests",
         "coverage"
+    ],
+    "configurations": [
+	      {
+	          "name": "example-app",
+	          "targetType": "executable",
+	          "sourceFiles": ["example/app.d"]
+	      }
     ]
 }

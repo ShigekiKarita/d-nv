@@ -1,3 +1,5 @@
+module dnv.error;
+
 import std.conv : to;
 import std.string : format, split;
 import std.algorithm : findSplitAfter;
@@ -66,8 +68,8 @@ void check(Result, string file = __FILE__, int line = __LINE__)(Result result) {
 
 unittest {
   import std.exception;
-  import storage;
-  import driver;
+  import dnv.storage;
+  import dnv.driver;
 
   try {
     check(CUresult.CUDA_ERROR_UNKNOWN);

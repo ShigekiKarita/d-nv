@@ -1,9 +1,11 @@
+module dnv.compiler;
+
 import std.conv;
 import std.string;
 
-import driver;
-import typechecker;
-import error;
+import dnv.driver;
+import dnv.typechecker;
+import dnv.error;
 
 
 struct Code {
