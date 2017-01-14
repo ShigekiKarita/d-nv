@@ -1,13 +1,29 @@
+#!/usr/bin/env dub
+/+ dub.json:
+{
+    "name": "dnv_example",
+    "targetType":"executable",
+    "dependencies": {
+        "d-nvrtc":{
+            "path": "../"
+        }
+    },
+    "lflags": ["-L.."],
+    "configurations": [
+        {
+            "name": "std"
+        }
+    ]
+}
++/
+
 import std.stdio;
 import std.process;
 import std.stdio;
 import std.random;
 import std.range;
 
-import dnv.kernel;
-import dnv.storage;
-import dnv.compiler;
-
+import dnv;
 
 string nvidia_smi() {
   auto p = executeShell("nvidia-smi");
