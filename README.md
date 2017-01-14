@@ -35,7 +35,7 @@ foreach (ai, bi, ci; zip(a.to_cpu(), b.to_cpu(), c.to_cpu())) {
 
 ## how to use
 
-install as follows
+install
 
 ```
 $ git clone https://github.com/ShigekiKarita/d-nvrtc.git
@@ -45,15 +45,15 @@ $ export LD_LIBRARY_PATH=`pwd`:$LD_LIBRARY_PATH
 $ export LIBRARY_PATH=`pwd`:$LIBRARY_PATH
 ```
 
-add bellow to your project file `dub.json`
+add dependency
 ``` json
     "dependencies": {
         "d-nvrtc": "*"
     }
 ```
-and then `$ dub run`
+to your project file `dub.json` and then `$ dub run`
 
-or add this header to your single app.d
+or add this header
 ``` json
 #!/usr/bin/env dub
 /+ dub.json:
@@ -66,8 +66,7 @@ or add this header to your single app.d
 }
 +/
 ```
-
-and then `$ dub app.d`
+to your single file `app.d` and then `$ dub app.d`
 
 ## roadmap
 
