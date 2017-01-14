@@ -1,19 +1,12 @@
 #!/usr/bin/env dub
 /+ dub.json:
 {
-    "name": "dnv_example",
+    "name": "dnv-example-app",
     "targetType":"executable",
     "dependencies": {
-        "d-nvrtc":{
-            "path": "../"
-        }
+        "d-nvrtc":{ "path": "../" }
     },
-    "lflags": ["-L.."],
-    "configurations": [
-        {
-            "name": "std"
-        }
-    ]
+    "lflags": ["-L.."]
 }
 +/
 

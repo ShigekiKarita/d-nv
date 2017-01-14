@@ -4,34 +4,70 @@
 
 just work in progress
 
-usage (from [rtc.d](/source/rtc.d))
+usage (from [example/app.d](/example/app.d))
 
 ``` d
-unittest {
-  import std.stdio;
-  import std.random;
-  import std.range;
+import dnv;
 
-  int n = 10;
-  auto gen = () => new Array!float(generate!(() => uniform(-1f, 1f)).take(n).array());
-  auto a = gen();
-  auto b = gen();
-  auto c = new Array!float(n);
-  enum code = Code(
-      "saxpy", q{float *A, float *B, float *C, int numElements},
-      q{
-        int i = blockDim.x * blockIdx.x + threadIdx.x;
-        if (i < numElements) C[i] = A[i] + B[i];
-      });
-  auto saxpy = new TypedKernel!(code);
-  saxpy(a, b, c, n); // type-checked at compile-time. 
-  // compile error: saxpy(a, b, c), saxpy(a, b, c, 3f)
+import std.stdio;
+import std.random;
+import std.range;
 
-  foreach (ai, bi, ci; zip(a.to_cpu(), b.to_cpu(), c.to_cpu())) {
-    assert(ai + bi == ci);
-  }
+int n = 10;
+auto gen = () => new Array!float(generate!(() => uniform(-1f, 1f)).take(n).array());
+auto a = gen();
+auto b = gen();
+auto c = new Array!float(n);
+enum code = Code(
+  "saxpy", q{float *A, float *B, float *C, int numElements},
+  q{
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < numElements) C[i] = A[i] + B[i];
+  });
+auto saxpy = new TypedKernel!(code);
+saxpy(a, b, c, n); // type-checked at compile-time. 
+// compile error: saxpy(a, b, c), saxpy(a, b, c, 3f)
+
+foreach (ai, bi, ci; zip(a.to_cpu(), b.to_cpu(), c.to_cpu())) {
+  assert(ai + bi == ci);
 }
 ```
+
+## how to use
+
+install as follows
+
+```
+$ git clone https://github.com/ShigekiKarita/d-nvrtc.git
+$ cd d-nvrtc && make all 
+$ dub add-local .
+$ export LD_LIBRARY_PATH=`pwd`:$LD_LIBRARY_PATH
+$ export LIBRARY_PATH=`pwd`:$LIBRARY_PATH
+```
+
+add bellow to your project file `dub.json`
+``` json
+    "dependencies": {
+        "d-nvrtc": "*"
+    }
+```
+and then `$ dub run`
+
+or add this header to your single app.d
+``` json
+#!/usr/bin/env dub
+/+ dub.json:
+{
+    "name": "your-app",
+    "targetType":"executable",
+    "dependencies": {
+        "d-nvrtc": "*"
+    }
+}
++/
+```
+
+and then `$ dub app.d`
 
 ## roadmap
 
