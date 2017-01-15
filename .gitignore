@@ -8,8 +8,8 @@
 !*.cpp
 !*.cu
 !*.md
+.\#*
 
 !dub.json
-!coverage
 !.gitignore
 !Makefile

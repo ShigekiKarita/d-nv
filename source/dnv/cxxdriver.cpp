@@ -71,7 +71,7 @@ CUresult cudaDeviceInit_(int id) {
 
   CHECK_RESULT(cuDeviceGet(&d.device, d.id));
   CHECK_RESULT(cuDeviceGetName(d.name, d.namelen, d.device));
-  printf("> Using CUDA Device [%d]: %s\n", d.id, d.name);
+  // printf("> Using CUDA Device [%d]: %s\n", d.id, d.name);
 
   CHECK_RESULT(cuCtxCreate(&d.context, 0, d.device));
   return CUDA_SUCCESS;
@@ -88,7 +88,8 @@ nvrtcResult compile_(void* kernel_addr, const char* funcname, const char* code) 
   filename += ".cu";
   nvrtcProgram prog;
   NVRTC_SAFE_CALL("nvrtcCreateProgram", nvrtcCreateProgram(&prog, code, filename.c_str(), 0, NULL, NULL));
-  NVRTC_SAFE_CALL("nvrtcCompileProgram", nvrtcCompileProgram(prog, 0, NULL));
+  // NVRTC_SAFE_CALL("nvrtcCompileProgram", nvrtcCompileProgram(prog, 0, NULL));
+  nvrtcCompileProgram(prog, 0, NULL);
 
   // dump log
   size_t logSize;
@@ -96,6 +97,7 @@ nvrtcResult compile_(void* kernel_addr, const char* funcname, const char* code) 
   auto log = make_unique<char[]>(logSize + 1);
   NVRTC_SAFE_CALL("nvrtcGetProgramLog", nvrtcGetProgramLog(prog, log.get()));
   log[logSize] = '\x0';
+  printf(">>> NVRTC log\n%s\n", log.get());
 
   // fetch PTX
   size_t ptxSize;
