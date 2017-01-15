@@ -89,7 +89,8 @@ nvrtcResult compile_(void* kernel_addr, const char* funcname, const char* code) 
   nvrtcProgram prog;
   NVRTC_SAFE_CALL("nvrtcCreateProgram", nvrtcCreateProgram(&prog, code, filename.c_str(), 0, NULL, NULL));
   // NVRTC_SAFE_CALL("nvrtcCompileProgram", nvrtcCompileProgram(prog, 0, NULL));
-  nvrtcCompileProgram(prog, 0, NULL);
+  const char* opts[] = {"--use_fast_math", "-arch=compute_30", "--std=c++11"};
+  nvrtcCompileProgram(prog, 3, opts);
 
   // dump log
   size_t logSize;

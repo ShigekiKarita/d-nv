@@ -49,7 +49,8 @@ static @fastmath F fmuladd(F a, F b, F c) @safe pure nothrow @nogc
 
 // __gshared is used to prevent specialized optimization for input data
 __gshared F result;
-__gshared n = 8000;
+immutable N = 8000;
+__gshared n = N;
 __gshared F[] a;
 __gshared F[] b;
 __gshared Slice!(1, F*) asl;
@@ -66,18 +67,15 @@ void main()
   auto da = new Array!float(a);
   auto db = new Array!float(b);
 
-  uint gx = 256;
-  uint bx = min(32, to!uint((gx + n - 1) / gx));
+  enum uint gx = 256;
+  enum uint bx = min(32, to!uint((gx + N - 1) / gx));
   auto dc = new Array!float(n);
 
   struct CustomLauncher {
-    uint[3] grids = [256, 1, 1];
-    uint[3] blocks;
+    uint[3] grids = [gx, 1, 1];
+    uint[3] blocks = [bx, 1, 1];
 
-    void setup(Args...)(Args targs) {
-      uint bx = min(32, to!uint((grids[0] + targs[0].length - 1) / grids[0]));
-      blocks = [bx, 1, 1];
-    }
+    void setup(Args...)(Args targs) {}
   }
 
   enum dotCode = Code
@@ -86,14 +84,14 @@ void main()
        // TODO: support header code
        float temp = 0;
        int idx = blockDim.x * blockIdx.x + threadIdx.x;
-       for (; idx < n; idx += blockDim.x * gridDim.x) {
+       int bgx = blockDim.x * gridDim.x;
+       for (; idx < n; idx += bgx) {
          temp += a[idx] * b[idx];
        }
 
        __shared__ int cache[256]; // 256 == grids[0]
        int tid = threadIdx.x;
        cache[tid] = temp;
-
        __syncthreads();
 
        for (int stride = blockDim.x / 2; stride > 0; stride >>= 1) {
