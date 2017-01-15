@@ -24,12 +24,5 @@
         "warnings",
         "unittests",
         "coverage"
-    ],
-    "configurations": [
-	      {
-	          "name": "example-app",
-	          "targetType": "executable",
-	          "sourceFiles": ["example/app.d"]
-	      }
     ]
 }
