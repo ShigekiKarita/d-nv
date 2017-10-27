@@ -27,6 +27,7 @@ class DriverBase {
     }
 
     static auto deviceInit(int id) {
+        import std.string;
         if (id !in initialized) {
             int deviceCount = 0;
             cuDeviceGetCount(&deviceCount);
@@ -42,7 +43,7 @@ class DriverBase {
             cuDeviceGetName(name.ptr, namelen, device);
             // TODO: use logger
             import std.conv : to;
-            writefln(">>> Using CUDA Device [%d]: %s", id, name.to!string);
+            writefln(">>> Using CUDA Device [%d]: %s", id, name.ptr.fromStringz);
 
             // get compute capabilities and the devicename
             // cudaDeviceProp dev;
@@ -102,7 +103,7 @@ auto compile(void* kernel_addr, string funcname, string code, int cuDevice=0)
     log[logSize] = '\0';
     auto slog = log.ptr.fromStringz.strip;
     if (logSize > 0 && !slog.empty) {
-        writefln(">>> NVRTC log\n%s\n", log.ptr.fromStringz);
+        writefln(">>> NVRTC log: %s\n%s", funcname, slog);
     }
 
     // load compiled ptx
