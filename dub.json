@@ -11,18 +11,13 @@
     ],
     "importPaths": [".", "./source", "./source/dnv"],
     "libs": [
-        "cxxdriver",
         "cuda",
         "nvrtc",
-        "cudart"
+        "cudart",
+        "cublas"
     ],
-    "buildOptions": [
-        "debugMode",
-        "debugInfo",
-        "debugInfoC",
-        "alwaysStackFrame",
-        "warnings",
-        "unittests",
-        "coverage"
-    ]
+    "dependencies": {
+        "derelict-cuda": "~>3.1.0",
+        "derelict-nvrtc": "~>1.0.2"
+    }
 }

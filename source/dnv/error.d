@@ -31,14 +31,11 @@ enum CImportEnum(string name, string headerPath) = function(){
   enum end = "} " ~ name ~ ";";
   enum cdef = findBetween(header, start, end).to!string;
   enum content = cdef.findSplitAfter("{")[1].findSplitAfter("}")[0];
-  return "extern (C++) enum %s {%s".format(name, content);
+  return "extern (C++) enum %s : int {%s".format(name, content);
 }();
 
-enum enumCUresultMixin = CImportEnum!("CUresult", "cuda.h");
-enum enumNvrtcResultMixin = CImportEnum!("nvrtcResult", "nvrtc.h");
-
-mixin(enumCUresultMixin);
-mixin(enumNvrtcResultMixin);
+mixin(CImportEnum!("CUresult", "cuda.h"));
+mixin(CImportEnum!("nvrtcResult", "nvrtc.h"));
 
 
 unittest {
@@ -66,6 +63,19 @@ void check(Result, string file = __FILE__, int line = __LINE__)(Result result) {
   }
 }
 
+void cuCheck(string file = __FILE__, int line = __LINE__)(int result) {
+  if (result) {
+      check!(CUresult, file, line)(cast(CUresult) result);
+  }
+}
+
+void nvrtcCheck(string file = __FILE__, int line = __LINE__)(int result) {
+  if (result) {
+      check!(nvrtcResult, file, line)(cast(nvrtcResult) result);
+  }
+}
+
+
 unittest {
   import std.exception;
   import dnv.storage;
@@ -77,5 +87,5 @@ unittest {
     auto s = e.toString();
     assert(s == "CUresult.CUDA_ERROR_UNKNOWN");
   }
-  assertThrown(new Array!float(3, -1));
+  assertThrown(new Array!float(3, 100));
 }

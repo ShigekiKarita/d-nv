@@ -4,7 +4,7 @@
 
 just work in progress
 
-usage (from [example/app.d](/example/app.d))
+nvrtc usage (from [example/app.d](/example/app.d))
 
 ``` d
 import dnv;
@@ -30,6 +30,55 @@ saxpy(a, b, c, n); // type-checked at compile-time.
 
 foreach (ai, bi, ci; zip(a.to_cpu(), b.to_cpu(), c.to_cpu())) {
   assert(ai + bi == ci);
+}
+```
+
+cublas usage (WIP)
+
+```
+unittest {
+    import dnv.storage : Array;
+    import dnv.cuda.cublas;
+
+    cublasHandle_t handle;
+    auto status = cublasCreate_v2(&handle);
+    scope(exit) cublasDestroy_v2(handle);
+
+    assert(status == CUBLAS_STATUS_SUCCESS);
+
+    float[] A = [1, 2, 3,
+                 4, 5, 6]; // M=3 x K=2
+    float[] B = [1, 2,
+                 3, 4,
+                 5, 6,
+                 7, 8]; // N=4 x k=2
+    auto M = 3;
+    auto N = 4;
+    auto K = 2;
+    float alpha = 1.0f;
+    float beta = 0.0f;
+    auto d_A = new Array!float(A);
+    auto d_B = new Array!float(B);
+    auto d_C = new Array!float(M * N);
+
+    // cublas driver API
+    status = cublasSgemm_v2(handle, CUBLAS_OP_N, CUBLAS_OP_T, M, N, K,
+                            &alpha, d_A.data, M, d_B.data, N, &beta, d_C.data, M);
+    assert(status == CUBLAS_STATUS_SUCCESS);
+
+    auto d_D = new Array!float(N * M);
+    status = cublasSgemm_v2(handle, CUBLAS_OP_N, CUBLAS_OP_T, N, M, K,
+                            &alpha, d_B.data, N, d_A.data, M, &beta, d_D.data, N);
+    assert(status == CUBLAS_STATUS_SUCCESS);
+
+    // check C = D.T
+    auto C = d_C.to_cpu();     // C = A x B.T
+    auto D = d_D.to_cpu();     // D = B x A.T
+    foreach (m; 0 .. M) {
+        foreach (n; 0 .. N) {
+            assert(C[m + n * M] == D[n + m * N]);
+        }
+    }
 }
 ```
 

@@ -7,6 +7,8 @@ import dnv.compiler;
 import dnv.driver;
 import dnv.error;
 
+import derelict.cuda.driverapi : CUfunction;
+
 
 void* vptr(F)(ref F f) {
   static if (is(typeof(f.ptr))) {
@@ -57,7 +59,7 @@ class KernelBase(Compiler, Launcher) {
     }
 
     launch.setup(targs);
-    check(launch_(vptr(func), vargs.ptr, launch.grids.ptr, launch.blocks.ptr));
+    check(dnv.driver.launch(vptr(func), vargs.ptr, launch.grids.ptr, launch.blocks.ptr));
   }
 }
 
