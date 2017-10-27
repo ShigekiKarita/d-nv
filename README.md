@@ -35,7 +35,7 @@ foreach (ai, bi, ci; zip(a.to_cpu(), b.to_cpu(), c.to_cpu())) {
 
 cublas usage (WIP)
 
-```
+``` d
 unittest {
     import dnv.storage : Array;
     import dnv.cuda.cublas;
