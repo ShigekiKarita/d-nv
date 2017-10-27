@@ -1,4 +1,4 @@
-# d-nvrtc
+# d-nv
 
 [![Coverage Status](https://coveralls.io/repos/github/ShigekiKarita/d-nvrtc/badge.svg?branch=master)](https://coveralls.io/github/ShigekiKarita/d-nvrtc?branch=master)
 
@@ -84,20 +84,10 @@ unittest {
 
 ## how to use
 
-install
-
-```
-$ git clone https://github.com/ShigekiKarita/d-nvrtc.git
-$ cd d-nvrtc && make all 
-$ dub add-local .
-$ export LD_LIBRARY_PATH=`pwd`:$LD_LIBRARY_PATH
-$ export LIBRARY_PATH=`pwd`:$LIBRARY_PATH
-```
-
-add dependency
+add dependency to your DUB project
 ``` json
     "dependencies": {
-        "d-nvrtc": "*"
+        "d-nv": "~>0.0.1"
     }
 ```
 to your project file `dub.json` and then `$ dub run`
@@ -110,7 +100,7 @@ or add this header
     "name": "your-app",
     "targetType":"executable",
     "dependencies": {
-        "d-nvrtc": "*"
+        "d-nv": "~>0.0.1"
     }
 }
 +/
@@ -138,7 +128,6 @@ to your single file `app.d` and then `$ dub app.d`
 
 1. thrust support
 1. fully multi-device support
-1. more D code ratio
 
 ## issues
 
