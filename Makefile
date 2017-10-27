@@ -1,5 +1,5 @@
 test:
-	dub test -b=unittest-cov
+	dub test -b=unittest-cov --compiler=dmd
 
 coverage: test
 	@find . -name "source-*.lst" -print | xargs -I{} sh -c \

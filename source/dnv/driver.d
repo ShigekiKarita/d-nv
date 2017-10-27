@@ -42,7 +42,6 @@ class DriverBase {
             cuDeviceGet(&device, id);
             cuDeviceGetName(name.ptr, namelen, device);
             // TODO: use logger
-            import std.conv : to;
             writefln(">>> Using CUDA Device [%d]: %s", id, name.ptr.fromStringz);
 
             // get compute capabilities and the devicename

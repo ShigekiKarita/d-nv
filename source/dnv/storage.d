@@ -5,7 +5,7 @@ import std.conv : to;
 import dnv.error;
 import dnv.driver;
 
-import derelict.cuda.driverapi : cuMemAlloc, cuMemcpyDtoH, cuMemcpyHtoD, cuMemFree, CUdeviceptr;
+import derelict.cuda.driverapi; // : cuMemAlloc, cuMemcpyDtoH, cuMemcpyHtoD, cuMemFree, CUdeviceptr, cuCtxSynchronize;
 
 class Array(T) : DriverBase {
     alias Element = T;
@@ -20,24 +20,25 @@ class Array(T) : DriverBase {
         dev = dev;
         length = n;
         rawLength = T.sizeof * n;
-        check(this.deviceInit(dev));
-        check(cuMemAlloc(&ptr, rawLength));
+        cuCheck(this.deviceInit(dev));
+        cuCheck(cuMemAlloc(&ptr, rawLength));
     }
     this(in T[] src, int dev = 0) {
         this(src.length);
         to_gpu(src);
     }
     ~this() {
-        check(cuMemFree(ptr));
+        cuCheck(cuMemFree(ptr));
     }
     auto to_gpu(in T[] src) {
-        cuMemcpyHtoD(ptr, to!(const(void*))(src.ptr), rawLength);
+        // TODO: use cuMemcpyHtoDAsync and CUstream
+        cuCheck(cuMemcpyHtoD(ptr, to!(const(void*))(src.ptr), rawLength));
         return this;
     }
     T[] to_cpu() {
         cpu_storage.length = rawLength / T.sizeof;
         // check(cudaDeviceInit_(dev));
-        check(cuMemcpyDtoH(to!(void*)(cpu_storage.ptr), ptr, rawLength));
+        cuCheck(cuMemcpyDtoH(to!(void*)(cpu_storage.ptr), ptr, rawLength));
         return cpu_storage;
     }
 
